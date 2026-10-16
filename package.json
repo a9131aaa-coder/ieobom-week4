@@ -1,0 +1,28 @@
+{
+  "name": "ieobom-week4",
+  "version": "0.1.0",
+  "private": true,
+  "description": "입어봄 4주차 과제: 홈 대시보드 + mock JSON API",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/dashboard.test.mjs",
+    "preview:offline": "node scripts/preview.mjs"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.3"
+  }
+}
