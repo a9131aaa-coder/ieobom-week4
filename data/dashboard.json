@@ -1,0 +1,58 @@
+{
+  "mode": "mock",
+  "asOf": "2026-10-16",
+  "periodLabel": "2026년 10월 · 예시",
+  "summary": {
+    "remaining": 17,
+    "limit": 20,
+    "wardrobeCount": 12,
+    "profileCompletion": 80
+  },
+  "recent": [
+    {
+      "id": "look-005",
+      "title": "편안하지만 단정한 출근룩",
+      "description": "화이트 셔츠 · 와이드 슬랙스 · 로퍼",
+      "occasion": "출근",
+      "date": "2026-10-15",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-01.webp"
+    },
+    {
+      "id": "look-004",
+      "title": "많이 걷는 날의 데이트룩",
+      "description": "셔츠 · 데님 · 편한 운동화는 그대로",
+      "occasion": "데이트",
+      "date": "2026-10-14",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-02.webp"
+    },
+    {
+      "id": "look-003",
+      "title": "좋아하는 니트로 완성한 주말",
+      "description": "라이트 니트 · 진청 데님 · 숄더백",
+      "occasion": "주말 외출",
+      "date": "2026-10-12",
+      "status": "저장됨",
+      "thumbnail": "/images/look-03.webp"
+    },
+    {
+      "id": "look-002",
+      "title": "재킷 하나로 정리하는 미팅룩",
+      "description": "기본 티셔츠 · 블랙 재킷 · 슬랙스",
+      "occasion": "미팅",
+      "date": "2026-09-30",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-04.webp"
+    },
+    {
+      "id": "look-001",
+      "title": "새로 사지 않고, 한 번 더",
+      "description": "차분한 색 조합 · 평소 입던 옷의 다른 연출",
+      "occasion": "일상",
+      "date": "2026-09-28",
+      "status": "저장됨",
+      "thumbnail": "/images/look-05.webp"
+    }
+  ]
+}

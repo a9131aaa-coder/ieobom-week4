@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>입어봄 PRD v1 · 4주차</title><style>
+@page{size:A4;margin:18mm 17mm 17mm;@bottom-left{content:"입어봄 · PRD v1 / 4주차";font-family:"Noto Sans CJK KR",sans-serif;font-size:8pt;color:#888;}@bottom-right{content:counter(page) " / " counter(pages);font-family:Arial;font-size:8pt;color:#888;}}
+*{box-sizing:border-box}body{font-family:Pretendard,"Noto Sans CJK KR","Malgun Gothic",sans-serif;color:#222;line-height:1.85;max-width:900px;margin:auto;padding:50px 36px;background:#fff;word-wrap:break-word}h1{font-size:34px;letter-spacing:-1.5px;line-height:1.4;margin:0 0 10px}h2{font-size:22px;letter-spacing:-.7px;margin:42px 0 13px;padding-top:15px;border-top:1px solid #252525;break-after:avoid}h3{font-size:16px;letter-spacing:-.3px;margin:24px 0 8px;break-after:avoid}p,li{font-size:14px;line-height:1.9}p{margin:10px 0}li{margin:6px 0}ul,ol{padding-left:23px}strong{font-weight:700}code{font-family:Consolas,"Noto Sans Mono CJK KR",monospace;background:#f4f4f1;padding:1px 4px;font-size:.9em;overflow-wrap:anywhere}pre{padding:16px;background:#f4f4f1;white-space:pre-wrap;font-size:12px;line-height:1.6;break-inside:avoid}pre code{padding:0}table{border-collapse:collapse;width:100%;font-size:12px;margin:16px 0;table-layout:fixed;break-inside:auto}th{text-align:left;background:#f1f1ed;font-weight:600;border-top:1px solid #bbb}td,th{padding:11px 10px;border-bottom:1px solid #e1e1da;vertical-align:top;overflow-wrap:anywhere}tr{break-inside:avoid}th:first-child,td:first-child{width:31%}.document-top{font-family:Arial,sans-serif;font-size:10px;letter-spacing:2px;color:#777;border-bottom:1px solid #222;padding-bottom:16px;margin-bottom:30px;display:flex;justify-content:space-between}.actions{display:flex;gap:10px;margin:30px 0}button,.actions a{font:inherit;font-size:12px;padding:10px 16px;border:1px solid #ccc;background:white;color:#333;text-decoration:none;cursor:pointer}.doc-note{font-size:11px;color:#888}
+@media(max-width:600px){body{padding:25px 20px}h1{font-size:27px}table{font-size:10px}td,th{padding:8px 6px}}
+@media print{body{padding:0;max-width:none}h1{font-size:24pt}h2{font-size:14pt;margin:20pt 0 8pt;padding-top:10pt}h3{font-size:11pt;margin:14pt 0 6pt}p,li{font-size:9pt;line-height:1.75}p{margin:6px 0}li{margin:3pt 0}table{font-size:8pt;margin:10pt 0;break-inside:avoid}td,th{padding:6pt 6pt}code{font-size:8pt}.document-top{margin-bottom:16pt;font-size:7pt}.actions{display:none}.doc-note{font-size:8pt}pre{font-size:8pt}}
+</style></head><body><div class="document-top"><span>PRODUCT REQUIREMENTS DOCUMENT</span><span>WEEK 04 / v0.1.0</span></div><h1>입어봄 · PRD v1</h1>
+<p><strong>AI와 창업혁신 / 4주차: PRD에서 첫 배포까지</strong> 버전 0.1.0 · 작성일 2026-10-16 · 단계: 대시보드 + mock API 브랜드명은 기존 발표자료의 가칭 ‘입어봄’을 유지한다. 신규 이름은 확정하지 않는다.</p>
+<h2>이번 버전 한 문장</h2>
+<p>내 옷과 취향을 활용하는 AI 코디 컨설턴트의 홈 대시보드에서, 남은 상담 횟수·등록한 옷·취향 프로필과 최근 코디 상담을 확인한다. <strong>이번 주에는 실제 AI 상담을 수행하지 않는다.</strong></p>
+<h2>1. 목적</h2>
+<p>사용자가 접속하자마자 상담 이용 현황, 등록한 의류 수, 프로필 완성도와 이전 코디 기록을 확인하도록 한다. 이번 과제의 목표는 전체 서비스를 완성하는 것이 아니라, 화면이 실제 API의 예시 데이터를 받아 표시하는 구조를 만들고 공개 URL로 접근하게 하는 것이다.</p>
+<p>제품의 장기 가치 제안은 ‘매번 취향을 다시 설명하지 않고 내 옷으로 다음 코디 선택을 돕는다’이다. 추천 품질·수요·결제 의사는 미검증이다.</p>
+<h2>2. 사용자</h2>
+<p><strong>타깃 가설:</strong> 출근·약속에 단정하게 입고 싶지만 편안함을 포기하고 싶지 않고, 가진 옷으로 조합을 정하기 어려운 여성 사회초년생.</p>
+<p><strong>비타깃:</strong> 새 옷 쇼핑만 원하거나, 실시간 인간 스타일리스트 상담·정밀한 사이즈 판정·가상 피팅을 원하는 사람.</p>
+<p>이번 화면은 누구나 열 수 있는 수업용 데모이며 실제 개인 계정이나 고객 기록을 사용하지 않는다. 데이터의 인물·활동·수치는 모두 가상이다.</p>
+<h2>3. 화면</h2>
+<p>전체 서비스의 화면 후보는 최대 다섯 개다. <strong>현재 구현은 홈 대시보드 한 개뿐이다.</strong></p>
+<table><thead><tr><th>화면</th><th>역할</th><th>4주차 상태</th></tr></thead><tbody>
+<tr><td>홈 대시보드</td><td>숫자 카드 3개와 최근 코디 상담 목록 1개</td><td>구현</td></tr>
+<tr><td>내 옷장</td><td>보유 의류 등록·관리</td><td>메뉴명만 표시, 비활성</td></tr>
+<tr><td>코디 상담</td><td>사진·상황 입력, 수정안 확인</td><td>메뉴명만 표시, 비활성</td></tr>
+<tr><td>착용 기록</td><td>실제 착용과 피드백 기록</td><td>메뉴명만 표시, 비활성</td></tr>
+<tr><td>스타일 프로필</td><td>선호·비선호·편안함 조건 관리</td><td>메뉴명만 표시, 비활성</td></tr>
+</tbody></table>
+<h3>홈 대시보드 구성</h3>
+<ul>
+<li>카드 1: 이번 달 남은 상담 — <code>summary.remaining / summary.limit</code></li>
+<li>카드 2: 등록한 옷 — <code>summary.wardrobeCount</code></li>
+<li>카드 3: 취향 프로필 — <code>summary.profileCompletion</code>%</li>
+<li>목록 1개: 최근 코디 상담 5건 — 코디 제목·간단 설명·상황·날짜·상태</li>
+<li>남은 상담 진행률은 <code>remaining / limit × 100</code>으로 계산한다. 한도가 0이면 0%다.</li>
+<li>다시 불러오기 버튼으로 API를 재요청한다. 로딩과 실패 상태를 구분한다.</li>
+<li>데스크톱은 사이드 메뉴, 모바일은 상단 메뉴로 배치한다. 4개 미구현 메뉴는 클릭할 수 없다.</li>
+<li>헤더와 하단에 수업용·예시 데이터임을 명시한다. 실제 서비스 성과로 오인시키지 않는다.</li>
+</ul>
+<p>화이트·블랙 중심의 편집디자인, 얇은 구분선, 넓은 여백을 사용한다. Pretendard를 외부 CSS로 참조하고, 불러오지 못하면 시스템 한글 고딕으로 대체한다. 글꼴 파일은 배포 ZIP에 포함하지 않는다.</p>
+<h2>4. 데이터</h2>
+<h3>지금 사용하는 데이터</h3>
+<p><code>data/dashboard.json</code>이 유일한 원본이다. <code>lib/dashboard-data.mjs</code>의 <code>getDashboard()</code>가 읽고 검증하며 <code>GET /api/dashboard</code>가 그대로 JSON으로 반환한다. 예시 숫자를 화면 코드에 적지 않는다.</p>
+<table><thead><tr><th>항목</th><th>예시 / 의미</th></tr></thead><tbody>
+<tr><td><code>mode</code></td><td><code>mock</code> — 수업용 예시 데이터</td></tr>
+<tr><td><code>periodLabel</code></td><td><code>2026년 10월 · 예시</code></td></tr>
+<tr><td><code>summary.remaining</code></td><td><code>17</code> — 남은 상담 횟수 가정</td></tr>
+<tr><td><code>summary.limit</code></td><td><code>20</code> — 월 한도 가정</td></tr>
+<tr><td><code>summary.wardrobeCount</code></td><td><code>12</code> — 등록한 옷 수 가정</td></tr>
+<tr><td><code>summary.profileCompletion</code></td><td><code>80</code> — 프로필 완성도 가정</td></tr>
+<tr><td><code>recent[]</code></td><td>정확히 5개; id, title, description, occasion, date, status, thumbnail</td></tr>
+</tbody></table>
+<p>날짜·상태·사용량은 샘플이다. 상태는 ‘착용 완료’, ‘피드백 대기’, ‘저장됨’을 사용한다. 이 값으로 실제 AI 분석, 프로필 진단 또는 결제가 이뤄졌다고 주장하지 않는다.</p>
+<p>썸네일은 이전 과제용 AI 포스터의 의류 이미지를 잘라 사용한 시각적 예시다. 실제 사용자가 등록한 사진이 아니며, 개별 상담의 실제 결과를 증명하지 않는다.</p>
+<h3>후속 데이터 구조 초안 — 아직 구현하지 않음</h3>
+<p>최대 7개 테이블 후보: <code>users</code>(취향 프로필 포함), <code>wardrobe_items</code>, <code>consultations</code>, <code>feedback</code>, <code>weekly_plans</code>, <code>usage_logs</code>, <code>subscriptions</code>. 실제 스키마·권한·개인정보 처리·과금 로직은 해당 수업에서 확정한다. Supabase 내부 인증 테이블의 산정 방식은 교수님 확인이 필요하다.</p>
+<h2>5. API와 기술 구성</h2>
+<ul>
+<li>프로젝트: Next.js App Router + TypeScript. 스타일은 별도 CSS로 구현한다.</li>
+<li>API: <code>GET /api/dashboard</code> 1개. 성공은 200 + JSON, 파일 읽기·검증 실패는 500 + 오류 JSON.</li>
+<li>이번 주 데이터 외부 API: 0개. AI·결제·날씨 API, 환경변수, 비밀 키를 사용하지 않는다.</li>
+<li>Pretendard 외부 스타일시트는 폰트 표시를 위한 참조이며 데이터 API가 아니다. 실패 시 기능에는 영향을 주지 않는다.</li>
+<li>Vercel 배포 시 <code>data/dashboard.json</code>을 서버 함수에 포함하도록 파일 추적 설정을 둔다.</li>
+<li>차후 AI API는 서버에서만 호출한다. 키를 브라우저 코드나 GitHub에 넣지 않는다.</li>
+<li>제출용 <code>public/PRD.html</code>은 이 설계서를 공개하는 정적 문서다. 별도 서비스 기능 화면이 아니다.</li>
+</ul>
+<p>수업 예시는 Tailwind를 사용하지만, 이 구현은 동일한 디자인 규칙을 <code>public/dashboard.css</code>의 CSS 변수에 모아 작성했다. 기본 스택인 Next.js + Vercel과 API 데이터 흐름은 유지한다.</p>
+<h2>6. 사용·요청 흐름</h2>
+<ol>
+<li>브라우저가 배포 사이트의 <code>/</code>에 접속한다.</li>
+<li>Next.js의 <code>app/page.tsx</code>가 고정 화면 구조를 제공한다.</li>
+<li><code>public/dashboard.mjs</code>가 <code>GET /api/dashboard</code>를 요청한다.</li>
+<li><code>app/api/dashboard/route.ts</code>가 <code>getDashboard()</code>를 호출한다.</li>
+<li>함수가 mock JSON을 읽고 유효성을 확인한다.</li>
+<li>API의 JSON 응답으로 카드 숫자·진행률·목록 5건을 채운다.</li>
+<li>다시 불러오기를 누르면 같은 API를 재요청한다.</li>
+</ol>
+<p>실패 시 이전 숫자를 성공처럼 남기지 않고 ‘—’와 오류 안내를 표시한다. 12초 안에 응답이 오지 않으면 재시도를 안내한다. 데이터 문구는 <code>textContent</code>로 넣어 HTML 실행을 방지한다.</p>
+<h2>7. 제외 범위</h2>
+<p>이번 버전에는 로그인·회원가입·실제 DB 저장·사진 업로드·AI 분석·이미지 생성·가상 피팅·결제·실시간 날씨·쇼핑몰 연동·자동 스케줄 실행을 넣지 않는다. 내 옷장 등 다른 메뉴는 이름만 표시한다.</p>
+<p>차트, 검색창, 알림 센터, 별도의 가입 유도 페이지도 만들지 않는다. 현재 사이트는 개인 정보를 받지 않는 공개 데모다. 수치와 기록을 사용자별 실데이터처럼 표현하지 않는다.</p>
+<h2>8. 완료 기준</h2>
+<ul>
+<li>□ 제출용 Vercel URL이 로그인 없이 다른 기기에서 열린다.</li>
+<li>□ 본문에 숫자 카드가 정확히 3개이고 최근 상담 목록이 1개, 데이터 행이 5개다.</li>
+<li>□ 브라우저 Network 탭에서 <code>/api/dashboard</code> GET의 상태 200을 확인한다.</li>
+<li>□ 카드 숫자와 기록이 <code>data/dashboard.json</code>에서 온다. 화면 코드에는 값이 없다.</li>
+<li>□ JSON의 수치를 변경하면 재배포 후 화면에도 반영된다.</li>
+<li>□ 로딩·네트워크 오류·재시도 상태가 정상적으로 표시된다.</li>
+<li>□ 모바일에서 가로 넘침 없이 읽히고, 미구현 메뉴는 비활성이다.</li>
+<li>□ 한국어가 깨지지 않고 예시 데이터라는 안내가 보인다.</li>
+<li>□ <code>npm run build</code>가 성공한다.</li>
+<li>□ PRD 문서 링크, Network 캡처, 본인의 한 줄 회고를 준비한다.</li>
+</ul>
+<p>체크박스는 최종 배포 환경에서 확인하고 체크한다. 개발 환경의 시각·단위 테스트 결과와 실제 공개 배포의 성공은 구분한다.</p>
+<h2>근거와 후속 계획</h2>
+<p><strong>강의자료 근거:</strong> 「AI와 창업혁신 4주차 강의자료_2.pdf」 3쪽: 주차별 순서 / 7쪽: PRD 8항목 / 23쪽: mock API 구현 / 43쪽: 카드 3개·목록 1개 / 51~53쪽: 제출 확인과 다음 주 AI 연결.</p>
+<p><strong>입어봄 적용 설계:</strong> 카드의 의미, 예시 수치·코디 기록, 화면 이름, 시각 디자인은 기존 입어봄 기획을 바탕으로 이번 과제에 맞춰 정한 안이다. 교수님이 제시한 실사용 데이터가 아니다.</p>
+<p><strong>5주차 AI 교체 후보:</strong> ‘사진·상황·확인된 보유 의류를 바탕으로 코디 수정안과 그 이유를 작성하는 부분’. 이번 대시보드의 예시 코디 문구를 출발점으로 삼는다. 6주차 DB, 7주차 로그인, 8주차 라이브 데모를 준비한다. 기존 발표안과 주차 범위가 다를 때는 이번 4주차 강의자료를 우선한다.</p><div class="actions"><button onclick="window.print()">인쇄 / PDF 저장</button><a href="/">대시보드로 돌아가기</a></div></body></html>
