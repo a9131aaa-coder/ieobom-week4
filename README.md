@@ -1,113 +1,55 @@
-# 입어봄 — 4주차 제출용 대시보드
+# 입어봄 5주차 통합 업데이트 · 0.2.0
 
-**이번 제출 범위: 홈 대시보드 1개 + GET /api/dashboard.**
+기존 ieobom-week4 Vercel 프로젝트에 올리는 업데이트입니다. 새 프로젝트를 만들 필요 없습니다.
 
-카드 3개와 목록 5건은 `data/dashboard.json`에서 읽습니다. 실제 AI, 로그인, DB, 사진 업로드, 결제는 없습니다. 미구현 메뉴는 ‘준비 중’으로 비활성화했습니다. 서비스 자체의 회원가입이나 AI API 키 없이 공개할 수 있는 구조입니다. GitHub와 Vercel 계정 로그인은 배포를 위해 필요합니다.
+## 가장 빠른 적용
 
-## 가장 간단한 배포: GitHub 업로드 → Vercel Import
+1. 이 ZIP을 새 폴더에 완전히 압축 해제합니다.
+2. 기존 GitHub `ieobom-week4` 저장소에서 **Add file → Upload files**를 엽니다.
+3. `package.json`이 보이는 위치의 파일과 폴더를 모두 업로드 상자에 끌어놓습니다. ZIP 자체나 바깥 폴더는 올리지 않습니다. `app`, `lib`, `data`, `public` 등은 폴더째 끌어놓습니다.
+4. **Commit changes**를 누릅니다. 기존 파일은 새 내용으로 교체되고 새 파일은 추가됩니다. `.env.local`, `node_modules`, `.next`는 올리지 않습니다.
+5. Google AI Studio https://aistudio.google.com/apikey 에서 본인 API 키를 발급받습니다. 키는 채팅·카톡·GitHub에 붙이지 않습니다.
+6. Vercel의 기존 프로젝트 → **Settings → Environment Variables**에 아래 두 항목을 입력합니다. 최소 Production 환경을 선택하고 저장합니다.
 
-1. 이 ZIP을 압축 해제합니다. `package.json`, `app`, `public`, `data`가 보이는 폴더를 엽니다.
-2. 본인 GitHub에서 새 저장소를 만듭니다. 예: `ieobom-week4`. 기존 저장소를 덮어쓰지 마세요.
-3. 저장소의 **uploading an existing file** 또는 **Add file → Upload files**에서 위 폴더의 **내용물**을 올립니다. ZIP 파일 자체를 올리면 안 됩니다.
-4. `node_modules`, `.next`, `.env`는 올리지 않습니다. 저장소 최상단에 `package.json`이 보이는지 확인하고 Commit changes를 누릅니다. 한 겹 더 들어간 폴더 아래에 올렸다면 Vercel Root Directory를 그 폴더로 설정해야 합니다.
-5. Vercel 로그인 → **Add New → Project → Import Git Repository** → 해당 저장소 Import.
-6. Framework Preset은 **Next.js**, Root Directory는 **package.json이 있는 폴더**, Node.js는 **22.x**를 사용합니다. Output Directory는 비워 두고 환경변수도 추가하지 않습니다. Deploy를 누릅니다.
-7. `Ready` 이후 표시되는 **Production 도메인**을 휴대폰 또는 시크릿 창으로 엽니다. 보이는 URL이 곧 제출 주소입니다. 프로젝트 이름만으로 주소를 미리 추측하지 않습니다.
-8. 공개 도메인에서 `/api/dashboard`가 JSON으로 열리는지 확인합니다.
+| 이름 | 값 |
+|---|---|
+| LLM_API_KEY | 본인이 발급받은 실제 키 |
+| LLM_MODEL | gemini-3.5-flash-lite |
 
-Vercel 계정 로그인 화면으로 넘어간다면 프로젝트의 Settings → Deployment Protection에서 공개 과제 도메인을 보호하지 않도록 확인하세요. 프리뷰 전체를 불필요하게 공개하지 말고, 제출할 Production 도메인만 비로그인 상태에서 확인합니다.
+7. **Deployments → 최신 배포의 메뉴 → Redeploy**를 누르고 Ready를 기다립니다. 파일 업로드로 자동 배포가 먼저 시작되어도 키 등록 이후 다시 배포해야 합니다.
+8. https://ieobom-week4.vercel.app 에서 **AI 코디 분석**을 누릅니다. ‘실제 AI 응답’ 표시와 `fallback:false`가 나와야 실제 연결 성공입니다.
 
-**PRD 링크:** 배포된 실제 도메인 뒤에 `/PRD.html`을 붙입니다. PDF는 `/PRD.pdf`입니다.
+‘AI 키가 아직 설정되지 않았습니다’가 나오면 화면과 버튼은 동작하지만 실제 AI 연결은 완료되지 않은 상태입니다. 환경변수 이름·적용 환경·재배포를 확인하세요. 무료 티어가 가능한 모델이라도 계정별 할당량 제한이 있을 수 있습니다. 유료 결제는 자동으로 요구하거나 진행하지 않습니다.
 
-## 제출할 네 가지
+## 오늘 확인할 세 가지
 
-1. 배포 URL — Vercel의 실제 Production 주소.
-2. PRD v1 문서 링크 — 같은 주소 뒤 `/PRD.html`.
-3. Network 캡처 — F12 → Network → Fetch/XHR → 새로고침 → `dashboard` 상태 200이 보이도록 캡처.
-4. 한 줄 회고 — 본인이 겪은 점을 직접 적습니다. 아래 형식을 사용해도 됩니다.
+- MOCK 옷장 → /api/suggest → 실제 AI → 대시보드 3개 코디
+- 내 옷장·코디 상담·착용 기록·스타일 프로필의 버튼 동작
+- 같은 배포 주소를 휴대폰에서 열고 결과 표시
 
-```text
-교수님, 입어봄 4주차 과제 제출드립니다.
-1. 배포 URL: [실제 배포된 주소]
-2. PRD v1: [실제 배포된 주소]/PRD.html
-3. Network 탭: 첨부한 캡처에서 /api/dashboard 200 확인
-4. 회고: [가장 막힌 부분]을 [어떻게 확인·해결했는지] 정리했습니다.
-5주차 AI 적용 후보: 사진과 상황을 바탕으로 코디 수정안과 이유를 작성하는 부분입니다.
-```
+개인 데이터는 브라우저별 저장입니다. 폰과 PC의 기록이 자동 동기화되는 버전은 아닙니다.
 
-`Network` 캡처는 임의 제작하지 않았습니다. 공개 배포 후 본인 브라우저의 실제 응답을 찍어야 합니다.
+## 제출 자료
 
-## 로컬에서 실행하는 경우
+사이트의 `/GUIDE.html`에 캡처와 제출 순서가 있습니다. `/PRD.html`은 변경점이 표시된 v1.1입니다. 기존 `PRD.pdf`는 4주차 원본 참고용이며, 이번 제출에는 HTML 링크를 쓰세요.
 
-Node.js 22를 설치한 다음 이 폴더에서 터미널을 열어 실행합니다.
+코디 분석 결과 아래 ‘실습 확인’을 펼치면 실제 응답 JSON과 토큰 사용량을 볼 수 있습니다. ‘원가 기록 CSV 저장’으로 현재 응답의 수치를 내려받고, 기존 정의서 게이트③ 목표와의 비교 문장을 직접 작성합니다. 아직 호출하지 않은 토큰 수를 실측값으로 제출하지 마세요.
 
-```sh
-npm install
-npm run dev
-```
+## 로컬 실행(선택)
 
-브라우저에서 `http://localhost:3000`을 엽니다. 배포 전에는 다음을 실행합니다.
+Node.js 22.x 권장. 프로젝트 폴더에서 `npm ci`, `npm run dev`. Windows는 `START_LOCAL.cmd`로 실행할 수 있습니다. `.env.example`을 `.env.local`로 복사한 뒤 개인 편집기로 키를 직접 입력하고 서버를 재시작합니다. 로컬 실행은 Vercel 제출에 필수는 아닙니다.
 
-```sh
-npm test
-npm run typecheck
-npm run build
-```
+검증: `npm test`, `npm run build`. 테스트의 AI 성공 경로는 모의 공급자 응답으로 검증하며 실제 API 키를 사용하지 않습니다. 유료 API 실제 성공 여부는 배포 후 확인해야 합니다.
 
-Windows에서는 `START_LOCAL.cmd`를 사용할 수 있습니다. 최초 실행에는 인터넷을 통해 npm 패키지를 설치합니다. 관리자 권한은 요구하지 않습니다.
+## 파일 안내
 
-처음 설치 후 생긴 `package-lock.json`도 저장소에 커밋하면 실제 설치된 버전이 고정됩니다. 현재 패키지 버전은 설치 시점의 안정 버전을 가져오도록 되어 있습니다. 취약점 점검과 업데이트 여부는 배포 전에 확인하세요.
+- app/api/dashboard/route.ts: 기본 MOCK 데이터
+- app/api/suggest/route.ts: POST 입력 검증·간이 호출 제한
+- lib/ai.mjs: 실제 Gemini 호출 한 곳, JSON 검증, 대체 응답, 토큰 원가
+- lib/dashboard-view.mjs / public/dashboard.mjs / public/dashboard.css: 화면·버튼·모바일 스타일
+- data/dashboard.json: 예시 옷장 12벌·프로필·기록 5건
+- PRD.md / public/PRD.html: PRD v1.1
 
-## 설치 없는 로컬 미리보기 — 대체 점검용, 제출 서버 아님
+## 한계
 
-Node.js는 있지만 npm 설치가 막힌 환경에서는:
-
-```sh
-node scripts/preview.mjs
-```
-
-동일한 화면·JS·CSS·데이터 읽기 함수를 Node 기본 서버에서 점검합니다. **이 서버는 Next.js가 아니며, 이 미리보기의 성공만으로 `next build`나 Vercel 배포가 검증된 것은 아닙니다.** Vercel에는 기본 Next.js 프로젝트를 배포하세요.
-
-## 폴더 구조
-
-```text
-app/
-  layout.tsx                 공통 문서/글꼴·스타일 연결
-  page.tsx                   홈 대시보드
-  api/dashboard/route.ts     GET API; 200 또는 500
-lib/
-  dashboard-view.mjs         고정 화면 문구·레이아웃
-  dashboard-data.mjs         mock 파일 읽기와 검증
-public/
-  dashboard.mjs              API 요청과 화면 갱신
-  dashboard-model.mjs        공통 검증/계산 함수
-  dashboard.css              반응형 디자인
-  images/                    기존 기획 포스터 기반 예시 썸네일
-  PRD.html / PRD.pdf          제출용 정적 설계서
-  favicon.svg                브라우저 탭 아이콘
-data/dashboard.json          카드 수치/목록의 유일한 원본
-tests/                       데이터/구조 단위 테스트
-scripts/preview.mjs          설치 없는 보조 미리보기
-PRD.md                       수정 가능한 설계서 원본
-```
-
-## 검증 상태와 제한
-
-제작 환경에서는 인터넷 패키지 다운로드가 제한되어 `npm install`·Next.js 빌드·Vercel 배포를 실행 완료하지 못했습니다. 대신 동일한 템플릿/브라우저 코드의 데스크톱·모바일 화면, 데이터 변경, 실패 안내와 재시도를 테스트하고, 보조 Node 서버에서 실제 JSON 응답 200을 확인했습니다. 세부 항목은 `docs/TEST_REPORT.md`를 참조하세요.
-
-브라우저 화면 테스트는 네트워크가 차단된 테스트 환경에서 API 응답을 주입한 방식입니다. **실제 배포 성공, 실제 Chrome Network 캡처와는 다릅니다.** 최종 제출 전 Vercel Build Logs와 공개 URL을 확인해야 합니다.
-
-글꼴은 Pretendard 외부 CSS를 참조합니다. 로컬 화면 검증 시에는 외부 폰트 접속이 제한되어 시스템 대체 글꼴이 사용됐습니다. 폰트 파일은 포함하지 않았습니다.
-
-## 공식 참고 문서
-
-- Next.js 설치: https://nextjs.org/docs/app/getting-started/installation
-- Vercel GitHub 배포: https://vercel.com/docs/git/vercel-for-github
-- 공개 도메인/보호: https://vercel.com/docs/deployments/generated-urls
-- Vercel 인증 보호: https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication
-
-## 이후 수정할 때
-
-브랜드 문구/메뉴: `lib/dashboard-view.mjs` · 숫자/기록: `data/dashboard.json` · 디자인: `public/dashboard.css`.
-
-현재 범위를 넘어 사진 업로드·AI·로그인을 한꺼번에 추가하지 마세요. 5주차는 AI 서버 호출, 6주차는 DB, 7주차는 인증을 강의 순서대로 연결합니다.
+사진 등록·이미지 분석·자동 취향 학습·로그인·DB는 없습니다. 서버 메모리 호출 제한은 인스턴스별 교육용 장치이므로 영구적인 비용 상한이 아닙니다. Google API의 실제 할당량과 결제 설정을 확인하세요.
