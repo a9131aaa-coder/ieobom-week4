@@ -1,0 +1,131 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>입어봄 5주차 적용 안내</title><style>*{box-sizing:border-box}body{margin:0;background:#fafaf7;color:#222;font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;word-break:keep-all}main{max-width:980px;margin:auto;padding:64px 44px 80px}nav{font-size:12px;color:#777;border-bottom:1px solid #ccc;padding-bottom:20px;margin-bottom:38px}h1{font-size:34px;letter-spacing:-1px;line-height:1.3;margin-bottom:25px}h2{font-size:22px;font-weight:600;border-top:1px solid #ccc;padding-top:28px;margin-top:42px}h3{font-size:18px}p,li{font-size:14px;line-height:1.9;color:#555}li{margin-bottom:9px}strong{color:#252720}a{color:#555e3e;text-underline-offset:4px}table{width:100%;border-collapse:collapse;font-size:13px;margin:22px 0}th,td{text-align:left;border-bottom:1px solid #ddd;padding:13px 12px;line-height:1.8}th{background:#eeeee5;font-weight:500}pre{padding:22px;background:#eeeee5;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:12px}code{font-size:12px}mark{background:#e8ecd9;padding:2px 4px}footer{border-top:1px solid #ddd;padding-top:22px;margin-top:50px;font-size:11px;color:#999}@media(max-width:600px){main{padding:28px 20px 50px}h1{font-size:27px}h2{font-size:20px}p,li{font-size:13px}table{display:block;overflow:auto;font-size:12px}th,td{min-width:100px;padding:10px}pre{font-size:10px}}@media print{body{background:white}main{padding:10px;max-width:none}h2{break-after:avoid}tr{break-inside:avoid}nav{display:none}}</style></head><body><main><nav><a href="/">입어봄으로 돌아가기</a> &nbsp; / &nbsp; <a href="/PRD.html">PRD v1.1</a> &nbsp; / &nbsp; <a href="/GUIDE.html">적용·제출 안내</a></nav><h1>5주차 적용·제출 안내</h1>
+<p>입어봄 0.2.0 · 2026-10-17</p>
+<h2>먼저, 실제 AI 연결까지 마무리하기</h2>
+<p>이 업데이트는 코드와 기능을 준비한 배포 패키지입니다. 본인 API 키를 등록하고 다시 배포하기 전까지는 ‘예시 결과’가 나올 수 있습니다. ‘실제 AI 응답’과 fallback:false를 확인해야 연결 완료입니다.</p>
+<ol>
+<li>ZIP을 새 폴더에 압축 해제합니다.</li>
+<li>GitHub의 기존 ieobom-week4 저장소 → Add file → Upload files.</li>
+<li>package.json이 보이는 위치의 파일과 폴더 전부를 업로드 상자에 끌어놓고 Commit changes.</li>
+<li><a href="https://aistudio.google.com/apikey">Google AI Studio</a>에서 API 키를 발급합니다. 키는 채팅이나 GitHub에 올리지 않습니다.</li>
+<li>Vercel 기존 프로젝트 → Settings → Environment Variables에 LLM_API_KEY(본인 키), LLM_MODEL(gemini-3.5-flash-lite)를 Production 환경으로 저장합니다.</li>
+<li>Deployments → 최신 배포 메뉴 → Redeploy → Ready 확인.</li>
+<li><a href="https://ieobom-week4.vercel.app">입어봄 열기</a> → AI 코디 분석. 실제 AI 응답인지 확인합니다.</li>
+</ol>
+<p>코드 파일은 GitHub에, 비밀 키는 Vercel 설정에 입력합니다. 키를 입력하는 과정에서 카드 등록이나 유료 가입을 반드시 해야 하는 것은 아닙니다. 무료 계정의 실제 사용 가능 여부·한도는 AI Studio에서 확인하세요.</p>
+<h2>오늘 확인할 화면</h2>
+<table>
+<thead>
+<tr>
+<th>확인</th>
+<th>누를 곳</th>
+<th>정상 결과</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MOCK 입력</td>
+<td>코디 상담 → 수업용 예시 옷장</td>
+<td>의류 12벌과 예시 취향 분석</td>
+</tr>
+<tr>
+<td>실제 AI 분석</td>
+<td>AI 코디 분석</td>
+<td>코디 3개와 추천 이유, 실제 AI 응답</td>
+</tr>
+<tr>
+<td>대시보드 표시</td>
+<td>홈 대시보드</td>
+<td>방금 만든 결과가 홈에도 표시</td>
+</tr>
+<tr>
+<td>옷 등록</td>
+<td>내 옷장 → 옷 등록</td>
+<td>새 옷이 목록과 숫자에 반영</td>
+</tr>
+<tr>
+<td>코디 저장</td>
+<td>이 코디 저장 → 착용 기록</td>
+<td>저장한 코디 상세·만족도 입력</td>
+</tr>
+<tr>
+<td>취향 반영</td>
+<td>프로필 저장 → 상담에서 수정한 옷장 선택</td>
+<td>수정한 취향으로 다음 요청</td>
+</tr>
+<tr>
+<td>휴대폰</td>
+<td>동일한 배포 URL 접속</td>
+<td>메뉴 이동과 분석 결과 확인</td>
+</tr>
+</tbody></table>
+<p>휴대폰에서 앱을 별도로 설치할 필요는 없습니다. PC에서 저장한 개인 기록이 폰에 자동으로 복사되지는 않습니다.</p>
+<h2>실제 AI 성공 확인</h2>
+<p>PC에서 F12 → Network → Fetch/XHR. 사이트의 AI 코디 분석 버튼을 누르고 suggest 요청을 선택합니다.</p>
+<ul>
+<li>Headers: Status Code 200</li>
+<li>Response: fallback:false, outfits 3개</li>
+<li>usage: 공급자가 반환한 입력·출력·추론 토큰 수</li>
+<li>응답과 요청 어디에도 API 키가 없는지 확인</li>
+</ul>
+<p>페이지를 여는 것만으로는 AI를 호출하지 않습니다. 실제로 분석 버튼을 눌러야 suggest 요청이 생깁니다.</p>
+<h2>실패 테스트 캡처</h2>
+<p>코디 상담 아래 ‘수업용 실패 테스트’를 펼치고 ‘실패 상황 테스트’를 누릅니다.</p>
+<ul>
+<li>화면: ‘지금은 예시를 보여 드려요’</li>
+<li>Network → suggest → Response: fallback:true, reason:forced_test</li>
+<li>상태 코드: 200</li>
+</ul>
+<p>이 버튼은 외부 AI를 호출하지 않는 의도적 실패 재현입니다. 교수님이 실제 공급자의 오류를 원하면 LLM_MODEL을 잠시 gemini-does-not-exist로 바꾸고 Redeploy 후 분석합니다. fallback:true와 model_not_found를 확인한 다음, 모델명을 gemini-3.5-flash-lite로 복구하고 다시 Redeploy합니다. 실패 테스트와 복구 결과를 혼동하지 마세요.</p>
+<p>캡처는 실제 배포 화면에서 직접 찍습니다. 예시 JSON이나 개발 테스트 화면을 실제 호출 증거로 제출하지 않습니다.</p>
+<h2>원가 기록</h2>
+<p>실제 분석 결과 아래 ‘실습 확인 · 응답 JSON / 토큰 / 원가’를 펼칩니다. ‘원가 기록 CSV 저장’을 누르면 방금 응답의 수치가 저장됩니다.</p>
+<p>기본 모델의 유료 Standard 단가 기준(2026-10-17 확인): 입력 $0.30/100만 토큰, 출력·추론 $2.50/100만 토큰. 수업 환율은 1달러=1,350원입니다.</p>
+<p>계산식: (입력 토큰 × 0.30 + (출력 + 추론 토큰) × 2.50) ÷ 1,000,000 × 1,350.</p>
+<p>무료 티어에서는 실제 청구액이 0원일 수 있습니다. 앱의 원가 표시는 유료 단가 환산치입니다. 다른 모델을 설정하면 공식 단가를 다시 확인해야 합니다. CSV 마지막 열에는 3주차 정의서 게이트③ 목표와 실측 환산치를 비교해 본인이 작성합니다. 기존 목표 수치는 제공받지 않아 임의로 채우지 않았습니다.</p>
+<p><a href="https://ai.google.dev/gemini-api/docs/pricing">Google 공식 가격표</a></p>
+<h2>제출할 다섯 가지</h2>
+<ol>
+<li>배포 URL: <a href="https://ieobom-week4.vercel.app">https://ieobom-week4.vercel.app</a></li>
+<li>PRD v1.1: <a href="https://ieobom-week4.vercel.app/PRD.html">https://ieobom-week4.vercel.app/PRD.html</a></li>
+<li>실패 테스트 화면 + fallback:true가 보이는 Network 캡처</li>
+<li>실제 토큰 원가 CSV + 게이트③ 비교 한 줄</li>
+<li>본인의 한 줄 회고</li>
+</ol>
+<p>강의자료 59번 슬라이드에 나온 제출물입니다. 현재 소프트웨어는 실제 호출과 캡처를 도와주도록 만들어져 있습니다. API 키 설정·실제 성공 호출·휴대폰 확인은 본인 배포 환경에서 마무리해야 합니다.</p>
+<h2>막히면 확인할 것</h2>
+<table>
+<thead>
+<tr>
+<th>표시</th>
+<th>확인</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AI 키가 아직 설정되지 않았습니다</td>
+<td>환경변수 이름, Production 체크, 저장 후 Redeploy</td>
+</tr>
+<tr>
+<td>키 또는 접근 권한 오류</td>
+<td>AI Studio에서 키와 사용 권한 확인</td>
+</tr>
+<tr>
+<td>모델을 찾지 못했습니다</td>
+<td>LLM_MODEL 이름 확인 후 Redeploy</td>
+</tr>
+<tr>
+<td>사용 한도에 도달했습니다</td>
+<td>계정의 무료 한도 확인, 나중에 재시도</td>
+</tr>
+<tr>
+<td>예전 화면이 계속 보입니다</td>
+<td>최신 GitHub 커밋과 Vercel Ready 확인, Ctrl+Shift+R</td>
+</tr>
+<tr>
+<td>수정한 취향이 반영되지 않습니다</td>
+<td>상담의 ‘내가 수정한 옷장과 스타일 프로필’ 선택</td>
+</tr>
+<tr>
+<td>휴대폰에서 Vercel 로그인 요청</td>
+<td>Production 주소인지, Deployment Protection 설정 확인</td>
+</tr>
+</tbody></table>
+<footer>입어봄 · AI와 창업혁신 5주차 · 2026-10-17</footer></main></body></html>

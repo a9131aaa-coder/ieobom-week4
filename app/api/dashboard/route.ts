@@ -1,5 +1,3 @@
-// 5주차: AI 호출은 서버에서만. 비밀 키는 .env.local에 두고 화면 코드에는 쓰지 않습니다.
-// 이번 주차에는 AI 호출, 인증, 외부 API 연결을 구현하지 않습니다.
 import { getDashboard } from '@/lib/dashboard-data.mjs';
 
 export const runtime = 'nodejs';

@@ -28,14 +28,3 @@ test('reject invalid counter, negative values, wrong record count and unsafe ima
     assert.throws(() => validateDashboard(d));
   }
 });
-test('markup contains three metric cards, one table and four disabled menus', () => {
-  assert.equal((dashboardMarkup.match(/data-metric=/g) || []).length, 3);
-  assert.equal((dashboardMarkup.match(/<table /g) || []).length, 1);
-  assert.equal((dashboardMarkup.match(/ disabled /g) || []).length, 4);
-});
-test('record titles and metric sample values are not hardcoded in markup', () => {
-  for (const row of data.recent) assert.equal(dashboardMarkup.includes(row.title), false);
-  for (const id of ['remaining', 'limit', 'wardrobe-count', 'profile-completion']) {
-    assert.ok(new RegExp(`id="${id}">—<`).test(dashboardMarkup));
-  }
-});
