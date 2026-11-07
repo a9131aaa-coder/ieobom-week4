@@ -1,7 +1,7 @@
 {
   "mode": "mock",
-  "asOf": "2026-10-17",
-  "periodLabel": "2026년 10월 · 예시",
+  "asOf": "2026-10-24",
+  "periodLabel": "2026년 10월 · 수업용 가상 데이터",
   "summary": {
     "remaining": 17,
     "limit": 20,
@@ -10,13 +10,136 @@
   },
   "recent": [
     {
+      "id": "look-006",
+      "title": "도서관에서 보내는 오후",
+      "description": "크림 니트 · 진청 데님 · 화이트 스니커즈",
+      "occasion": "주말 외출",
+      "date": "2026-10-23",
+      "status": "저장됨",
+      "thumbnail": "/images/look-01.webp",
+      "reason": "밝은 니트와 진청을 조합해 차분한 분위기를 만듭니다.",
+      "tip": "오래 앉아 있을 때 허리와 어깨가 편한지 확인하세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-007",
+      "title": "가벼운 동네 산책",
+      "description": "네이비 스트라이프 티 · 베이지 팬츠 · 스니커즈",
+      "occasion": "일상",
+      "date": "2026-10-22",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-02.webp",
+      "reason": "줄무늬 상의에 단색 하의를 더해 조합을 단순하게 정리합니다.",
+      "tip": "소지품은 숄더백에 간단히 챙겨 보세요.",
+      "rating": 4
+    },
+    {
+      "id": "look-008",
+      "title": "친구와 카페에서",
+      "description": "화이트 셔츠 · 진청 데님 · 브라운 숄더백",
+      "occasion": "친구와 약속",
+      "date": "2026-10-21",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-03.webp",
+      "reason": "흰색과 진청에 갈색 가방으로 따뜻한 색을 더합니다.",
+      "tip": "셔츠 소매를 한 번 접어 편안하게 연출해 보세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-009",
+      "title": "발표가 있는 날",
+      "description": "화이트 셔츠 · 차콜 슬랙스 · 블랙 재킷",
+      "occasion": "미팅",
+      "date": "2026-10-20",
+      "status": "저장됨",
+      "thumbnail": "/images/look-04.webp",
+      "reason": "명도가 다른 무채색으로 단정한 구성을 만듭니다.",
+      "tip": "착석할 때 재킷이 당기지 않는지 확인하세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-010",
+      "title": "편안한 기차 여행",
+      "description": "블랙 티셔츠 · 베이지 팬츠 · 스니커즈",
+      "occasion": "여행",
+      "date": "2026-10-19",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-05.webp",
+      "reason": "기본 티셔츠와 편한 신발로 이동이 많은 상황을 고려합니다.",
+      "tip": "실내 온도에 대비해 가디건을 챙겨 보세요.",
+      "rating": 4
+    },
+    {
+      "id": "look-011",
+      "title": "가디건을 더한 출근",
+      "description": "화이트 셔츠 · 차콜 슬랙스 · 베이지 가디건",
+      "occasion": "출근",
+      "date": "2026-10-18",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-01.webp",
+      "reason": "단정한 기본 조합에 부드러운 색의 겉옷을 더합니다.",
+      "tip": "셔츠와 가디건의 소매가 겹쳐 불편하지 않은지 확인하세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-012",
+      "title": "가볍게 둘러보는 전시",
+      "description": "크림 니트 · 차콜 슬랙스 · 블랙 로퍼",
+      "occasion": "데이트",
+      "date": "2026-10-17",
+      "status": "저장됨",
+      "thumbnail": "/images/look-02.webp",
+      "reason": "차분한 하의에 밝은 니트로 시선을 모으는 예시입니다.",
+      "tip": "관람 시간이 길다면 편한 스니커즈로 바꿔 보세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-013",
+      "title": "수업 뒤 저녁 약속",
+      "description": "네이비 티 · 진청 데님 · 베이지 가디건",
+      "occasion": "친구와 약속",
+      "date": "2026-10-16",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-03.webp",
+      "reason": "짙은 색 기본 조합에 밝은 겉옷으로 변화를 줍니다.",
+      "tip": "가디건을 벗어도 균형이 맞는지 확인하세요.",
+      "rating": 4
+    },
+    {
+      "id": "look-014",
+      "title": "주말 장보는 날",
+      "description": "블랙 티셔츠 · 진청 데님 · 화이트 스니커즈",
+      "occasion": "일상",
+      "date": "2026-10-15",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-04.webp",
+      "reason": "관리하기 쉬운 기본 조합을 반복 활용하는 예시입니다.",
+      "tip": "이동과 짐을 고려해 손이 편한 가방을 골라 보세요.",
+      "rating": 0
+    },
+    {
       "id": "look-005",
       "title": "편안하지만 단정한 출근룩",
       "description": "화이트 셔츠 · 와이드 슬랙스 · 로퍼",
       "occasion": "출근",
       "date": "2026-10-15",
       "status": "착용 완료",
-      "thumbnail": "/images/look-01.webp"
+      "thumbnail": "/images/look-01.webp",
+      "reason": "가지고 있는 기본 의류를 다시 조합하는 수업용 예시입니다.",
+      "tip": "실제 착용 전 활동량과 기온에 맞게 조절해 보세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-015",
+      "title": "단정한 온라인 미팅",
+      "description": "화이트 셔츠 · 베이지 팬츠 · 블랙 로퍼",
+      "occasion": "미팅",
+      "date": "2026-10-14",
+      "status": "저장됨",
+      "thumbnail": "/images/look-05.webp",
+      "reason": "밝은 상의로 얼굴 주변을 간결하게 정돈하는 조합입니다.",
+      "tip": "카메라에 보이는 셔츠 깃과 구김을 확인하세요.",
+      "rating": 0
     },
     {
       "id": "look-004",
@@ -25,7 +148,34 @@
       "occasion": "데이트",
       "date": "2026-10-14",
       "status": "피드백 대기",
-      "thumbnail": "/images/look-02.webp"
+      "thumbnail": "/images/look-02.webp",
+      "reason": "가지고 있는 기본 의류를 다시 조합하는 수업용 예시입니다.",
+      "tip": "실제 착용 전 활동량과 기온에 맞게 조절해 보세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-016",
+      "title": "니트와 로퍼의 조합",
+      "description": "크림 니트 · 차콜 슬랙스 · 블랙 로퍼",
+      "occasion": "출근",
+      "date": "2026-10-13",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-01.webp",
+      "reason": "부드러운 상의와 선이 단정한 하의를 조합합니다.",
+      "tip": "니트 밑단을 자연스럽게 정리해 보세요.",
+      "rating": 4
+    },
+    {
+      "id": "look-017",
+      "title": "가까운 곳으로 당일치기",
+      "description": "스트라이프 티 · 베이지 팬츠 · 스니커즈",
+      "occasion": "여행",
+      "date": "2026-10-12",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-02.webp",
+      "reason": "이동하기 편한 신발에 기본색 의류를 조합한 예시입니다.",
+      "tip": "기온에 따라 블랙 재킷이나 가디건을 챙겨 보세요.",
+      "rating": 0
     },
     {
       "id": "look-003",
@@ -34,7 +184,46 @@
       "occasion": "주말 외출",
       "date": "2026-10-12",
       "status": "저장됨",
-      "thumbnail": "/images/look-03.webp"
+      "thumbnail": "/images/look-03.webp",
+      "reason": "가지고 있는 기본 의류를 다시 조합하는 수업용 예시입니다.",
+      "tip": "실제 착용 전 활동량과 기온에 맞게 조절해 보세요.",
+      "rating": 0
+    },
+    {
+      "id": "look-018",
+      "title": "재킷과 데님의 주말",
+      "description": "블랙 티셔츠 · 진청 데님 · 블랙 재킷",
+      "occasion": "주말 외출",
+      "date": "2026-10-11",
+      "status": "저장됨",
+      "thumbnail": "/images/look-03.webp",
+      "reason": "익숙한 데님 조합을 재킷으로 정돈합니다.",
+      "tip": "가방을 갈색으로 바꾸면 색에 변화를 줄 수 있어요.",
+      "rating": 0
+    },
+    {
+      "id": "look-019",
+      "title": "화이트와 베이지의 조합",
+      "description": "화이트 셔츠 · 베이지 팬츠 · 브라운 숄더백",
+      "occasion": "데이트",
+      "date": "2026-10-10",
+      "status": "착용 완료",
+      "thumbnail": "/images/look-04.webp",
+      "reason": "밝은 기본색을 연결하고 갈색 소품으로 마무리합니다.",
+      "tip": "신발도 편안한 밝은색으로 맞춰 보세요.",
+      "rating": 4
+    },
+    {
+      "id": "look-020",
+      "title": "있는 옷으로 새 조합",
+      "description": "크림 니트 · 진청 데님 · 블랙 로퍼",
+      "occasion": "일상",
+      "date": "2026-10-09",
+      "status": "피드백 대기",
+      "thumbnail": "/images/look-05.webp",
+      "reason": "가진 니트와 데님을 신발만 바꿔 활용하는 예시입니다.",
+      "tip": "마음에 드는 조합이면 착용 기록에 남겨 보세요.",
+      "rating": 0
     },
     {
       "id": "look-002",
@@ -43,7 +232,10 @@
       "occasion": "미팅",
       "date": "2026-09-30",
       "status": "착용 완료",
-      "thumbnail": "/images/look-04.webp"
+      "thumbnail": "/images/look-04.webp",
+      "reason": "가지고 있는 기본 의류를 다시 조합하는 수업용 예시입니다.",
+      "tip": "실제 착용 전 활동량과 기온에 맞게 조절해 보세요.",
+      "rating": 0
     },
     {
       "id": "look-001",
@@ -52,7 +244,10 @@
       "occasion": "일상",
       "date": "2026-09-28",
       "status": "저장됨",
-      "thumbnail": "/images/look-05.webp"
+      "thumbnail": "/images/look-05.webp",
+      "reason": "가지고 있는 기본 의류를 다시 조합하는 수업용 예시입니다.",
+      "tip": "실제 착용 전 활동량과 기온에 맞게 조절해 보세요.",
+      "rating": 0
     }
   ],
   "profile": {

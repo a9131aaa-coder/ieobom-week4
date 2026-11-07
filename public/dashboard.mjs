@@ -1,7 +1,8 @@
 const $=id=>document.getElementById(id);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='ieobom-week5-v1';
-let data, state, current='home', filter='전체', busy=false, activeRecord=null, toastTimer;
+const LEGACY_BASE={"wardrobe":[{"id":"w01","name":"화이트 코튼 셔츠","category":"상의","color":"화이트","swatch":"#eeeae3"},{"id":"w02","name":"크림 라운드 니트","category":"상의","color":"크림","swatch":"#e6dcc8"},{"id":"w03","name":"블랙 기본 티셔츠","category":"상의","color":"블랙","swatch":"#323232"},{"id":"w04","name":"네이비 스트라이프 티","category":"상의","color":"네이비","swatch":"#364356"},{"id":"w05","name":"차콜 와이드 슬랙스","category":"하의","color":"차콜","swatch":"#595954"},{"id":"w06","name":"진청 스트레이트 데님","category":"하의","color":"진청","swatch":"#3b5268"},{"id":"w07","name":"베이지 코튼 팬츠","category":"하의","color":"베이지","swatch":"#c7b89f"},{"id":"w08","name":"블랙 싱글 재킷","category":"아우터","color":"블랙","swatch":"#333333"},{"id":"w09","name":"베이지 가디건","category":"아우터","color":"베이지","swatch":"#c9baa2"},{"id":"w10","name":"블랙 로퍼","category":"신발","color":"블랙","swatch":"#333333"},{"id":"w11","name":"화이트 스니커즈","category":"신발","color":"화이트","swatch":"#eeeeea"},{"id":"w12","name":"브라운 숄더백","category":"가방","color":"브라운","swatch":"#87664e"}],"profile":{"style":"미니멀 · 단정한 캐주얼","colors":"화이트, 블랙, 네이비, 베이지","avoid":"큰 로고, 과한 장식","comfort":"오래 걸어도 편한 신발","goal":"가진 옷을 다양하게 활용하고 싶어요"},"records":[{"id":"look-005","title":"편안하지만 단정한 출근룩","description":"화이트 셔츠 · 와이드 슬랙스 · 로퍼","occasion":"출근","date":"2026-10-15","status":"착용 완료","thumbnail":"/images/look-01.webp","kind":"sample","rating":0},{"id":"look-004","title":"많이 걷는 날의 데이트룩","description":"셔츠 · 데님 · 편한 운동화는 그대로","occasion":"데이트","date":"2026-10-14","status":"피드백 대기","thumbnail":"/images/look-02.webp","kind":"sample","rating":0},{"id":"look-003","title":"좋아하는 니트로 완성한 주말","description":"라이트 니트 · 진청 데님 · 숄더백","occasion":"주말 외출","date":"2026-10-12","status":"저장됨","thumbnail":"/images/look-03.webp","kind":"sample","rating":0},{"id":"look-002","title":"재킷 하나로 정리하는 미팅룩","description":"기본 티셔츠 · 블랙 재킷 · 슬랙스","occasion":"미팅","date":"2026-09-30","status":"착용 완료","thumbnail":"/images/look-04.webp","kind":"sample","rating":0},{"id":"look-001","title":"새로 사지 않고, 한 번 더","description":"차분한 색 조합 · 평소 입던 옷의 다른 연출","occasion":"일상","date":"2026-09-28","status":"저장됨","thumbnail":"/images/look-05.webp","kind":"sample","rating":0}]};
+let data, state, current='home', filter='전체', busy=false, activeRecord=null, toastTimer, dataSource='mock', historyPage=0;
 const profileKeys=['style','colors','avoid','comfort','goal'];
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4200);}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{toast('저장 공간에 접근할 수 없어 이번 화면에서만 변경됩니다.');}}
@@ -13,16 +14,45 @@ function route(){
   $('breadcrumb-title').textContent=({home:'Dashboard',wardrobe:'Wardrobe',consult:'Styling',history:'Archive',profile:'My profile'})[current];
   if(data){document.title=`입어봄 · ${{home:'홈 대시보드',wardrobe:'내 옷장',consult:'코디 상담',history:'착용 기록',profile:'스타일 프로필'}[current]}`;}
 }
-function isStoredState(s){return s?.version===1 && Array.isArray(s.wardrobe)&&s.wardrobe.length<=40&&s.wardrobe.every(w=>w&&['id','name','category','color','swatch'].every(k=>typeof w[k]==='string'))&&s.profile&&profileKeys.every(k=>typeof s.profile[k]==='string'&&s.profile[k].length<=160)&&Array.isArray(s.records)&&s.records.length<=200&&s.records.every(r=>r&&typeof r.id==='string'&&typeof r.title==='string'&&typeof r.description==='string')&&(!s.analysis || (Array.isArray(s.analysis.outfits)&&s.analysis.outfits.length===3&&s.analysis.outfits.every(o=>o&&typeof o.title==='string'&&typeof o.reason==='string'&&typeof o.tip==='string'&&Array.isArray(o.itemIds))&&Array.isArray(s.analysis.items)&&s.analysis.items.every(w=>w&&typeof w.id==='string'&&typeof w.name==='string')));}
+function isStoredState(s){return s?.version===1 && Array.isArray(s.wardrobe)&&s.wardrobe.length<=10000&&s.wardrobe.every(w=>w&&['id','name','category','color','swatch'].every(k=>typeof w[k]==='string'))&&s.profile&&profileKeys.every(k=>typeof s.profile[k]==='string'&&s.profile[k].length<=160)&&Array.isArray(s.records)&&s.records.length<=10000&&s.records.every(r=>r&&typeof r.id==='string'&&typeof r.title==='string'&&typeof r.description==='string')&&(!s.analysis || (Array.isArray(s.analysis.outfits)&&s.analysis.outfits.length===3&&s.analysis.outfits.every(o=>o&&typeof o.title==='string'&&typeof o.reason==='string'&&typeof o.tip==='string'&&Array.isArray(o.itemIds))&&Array.isArray(s.analysis.items)&&s.analysis.items.every(w=>w&&typeof w.id==='string'&&typeof w.name==='string')));}
+// Reapply only browser edits. Unedited fields always reflect the latest DB values.
+function mergeFields(fresh, saved, base){
+ const result={...fresh};
+ for(const key of Object.keys(saved))if(JSON.stringify(saved[key])!==JSON.stringify(base[key]))result[key]=saved[key];
+ return result;
+}
+function mergeRows(fresh, saved, base){
+ const old=new Map(base.map(r=>[r.id,r])), edits=new Map(saved.map(r=>[r.id,r]));
+ const rows=fresh.filter(r=>!old.has(r.id)||edits.has(r.id)).map(r=>old.has(r.id)&&edits.has(r.id)?mergeFields(r,edits.get(r.id),old.get(r.id)):r);
+ const ids=new Set(rows.map(r=>r.id));
+ return [...saved.filter(r=>!old.has(r.id)&&!ids.has(r.id)),...rows];
+}
 async function load(){
-  $('load-state').hidden=false;$('load-error').hidden=true;
+  $('load-state').hidden=false;$('load-error').hidden=true;$('data-status').hidden=true;
   try{
     const response=await fetch('/api/dashboard',{cache:'no-store',signal:AbortSignal.timeout(12000)});
     if(!response.ok)throw new Error('load');
     data=await response.json();
+    dataSource=response.headers.get('x-data-source')==='db'?'db':'mock';
+    $('db-source').textContent=dataSource==='db'?'Supabase 연결됨':'샘플 데이터 표시 중';
+    $('db-meta').textContent=`옷 ${data.wardrobe?.length??0}벌 · 기록 ${data.recent?.length??0}개 · 수업용 가상 데이터`;
+    $('db-header').textContent=`x-data-source: ${response.headers.get('x-data-source')||'확인 불가'}`;
+    $('db-fallback').textContent=({missing_config:'연결 정보를 등록하면 DB 데이터를 불러옵니다.',db_timeout:'DB 응답이 늦어 파일의 예시 데이터를 표시합니다.',db_unavailable:'DB 연결 또는 데이터 형식을 확인해 주세요. 현재 파일의 예시 데이터를 표시합니다.'})[response.headers.get('x-data-fallback')]||'';
+    $('data-source').options[0].textContent=`공통 예시 옷장 · ${dataSource==='db'?'Supabase':'MOCK'} ${data.wardrobe?.length??0}벌`;
     if(!Array.isArray(data.wardrobe)||!data.profile||!Array.isArray(data.recent))throw new Error('schema');
-    state={version:1,wardrobe:structuredClone(data.wardrobe),profile:structuredClone(data.profile),records:data.recent.map(r=>({...r,kind:'sample',rating:0})),analysis:null};
-    try {const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(isStoredState(saved))state=saved;else if(saved)toast('저장된 정보 형식이 달라 예시 데이터로 시작합니다.');}catch{toast('저장된 정보를 읽지 못해 예시 데이터로 시작합니다.');}
+    const fresh={wardrobe:structuredClone(data.wardrobe),profile:structuredClone(data.profile),records:data.recent.map(r=>({...r,kind:'sample',rating:r.rating??0}))};
+    state={version:1,...structuredClone(fresh),analysis:null,baseline:fresh};
+    try {
+      const saved=JSON.parse(localStorage.getItem(KEY)||'null');
+      if(isStoredState(saved)){
+        const base=saved.baseline&&isStoredState({version:1,...saved.baseline})?saved.baseline:LEGACY_BASE;
+        state.wardrobe=mergeRows(fresh.wardrobe,saved.wardrobe,base.wardrobe);
+        state.records=mergeRows(fresh.records,saved.records,base.records);
+        state.profile=mergeFields(fresh.profile,saved.profile,base.profile);
+        state.analysis=saved.analysis;
+      }else if(saved)toast('저장된 정보 형식이 달라 공통 예시 데이터로 시작합니다.');
+    }catch{toast('저장된 정보를 읽지 못해 공통 예시 데이터로 시작합니다.');}
+    persist();$('data-status').hidden=false;
     for(const k of profileKeys)$('profile-'+k).value=state.profile[k];
     render();route();
   }catch{data=null;$('load-error').hidden=false;route();}
@@ -43,7 +73,13 @@ function rows(records){return records.length?records.map((r,i)=>`<button class="
 function render(){
   $('wardrobe-count').textContent=state.wardrobe.length;$('saved-count').textContent=state.records.length;
   $('profile-completion').textContent=profileKeys.filter(k=>state.profile[k].trim()).length*20;
-  renderWardrobe();$('recent-list').innerHTML=rows(state.records.slice(0,5));$('history-list').innerHTML=rows(state.records);renderAnalysis();
+  renderWardrobe();$('recent-list').innerHTML=rows(state.records.slice(0,5));renderHistory();renderAnalysis();
+}
+function renderHistory(){
+ const pages=Math.max(1,Math.ceil(state.records.length/10));historyPage=Math.max(0,Math.min(historyPage,pages-1));
+ $('history-list').innerHTML=rows(state.records.slice(historyPage*10,historyPage*10+10));
+ $('history-page').textContent=`${historyPage+1} / ${pages} 페이지 · ${state.records.length}개`;
+ $('history-prev').disabled=historyPage===0;$('history-next').disabled=historyPage===pages-1;
 }
 const reasonText={forced_test:'실패 테스트로 예시 결과를 표시했습니다.',missing_key:'AI 키가 아직 설정되지 않았습니다. Vercel에서 키를 등록한 뒤 다시 배포해 주세요.',invalid_model:'AI 모델 설정을 확인해 주세요.',provider_limit:'AI 제공사의 사용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.',provider_auth:'AI 키 또는 접근 권한을 확인해 주세요.',model_not_found:'설정한 AI 모델을 찾지 못했습니다.',provider_error:'AI 제공사에서 응답 오류가 발생했습니다.',incomplete_response:'AI 답변이 완료되지 않아 예시를 표시합니다.',empty_response:'AI가 빈 응답을 보내 예시를 표시합니다.',invalid_response:'AI 결과가 필요한 형식과 일치하지 않아 예시를 표시합니다.',timeout:'AI 응답이 지연되어 예시를 표시합니다.',connection_error:'AI 서버에 연결하지 못했습니다.',server_limit:'짧은 시간에 요청이 많습니다. 잠시 후 다시 시도해 주세요.'};
 function renderAnalysis(){
@@ -53,7 +89,7 @@ function renderAnalysis(){
  const r=state?.analysis;if(!r){hosts.forEach(h=>h.innerHTML='');return;}
  const byId=new Map(r.items.map(w=>[w.id,w]));
  const usage=r.usage;
- const html=`<div class="section-heading"><div><span class="eyebrow">YOUR PERSONAL EDIT</span><h2>${r.fallback?'코디 예시 결과':'AI 코디 분석 결과'}</h2></div><a class="text-link" href="#consult">다시 상담하기 ↗</a></div><div class="result-meta"><span class="badge ${r.fallback?'example':'ai'}">${r.fallback?'예시 결과 · 대체 응답':'실제 AI 응답'}</span><span>${r.source==='mock'?'MOCK 옷장':'내가 수정한 옷장'} · ${escape(r.occasion)}</span><span>${escape(new Date(r.generatedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</span></div>${r.fallback?`<div class="notice" role="status"><b>지금은 예시를 보여 드려요.</b><br>${escape(reasonText[r.reason]||'AI 응답 대신 기본 예시를 표시합니다.')}</div>`:''}<p class="analysis-summary">${escape(r.summary)}</p><div class="outfit-grid">${r.outfits.map((o,i)=>`<article class="outfit"><span class="outfit-index">LOOK / 0${i+1}</span><h3>${escape(o.title)}</h3><ul>${o.itemIds.map(id=>`<li>${escape(byId.get(id)?.name||'삭제된 의류')}</li>`).join('')}</ul><p class="reason">${escape(o.reason)}</p><p class="tip">${escape(o.tip)}</p><button class="button secondary" data-save-outfit="${i}">${state.records.some(x=>x.analysisKey===r.generatedAt+'-'+i)?'저장됨 · 기록 보기':'이 코디 저장 ↗'}</button></article>`).join('')}</div><details class="lab"><summary>실습 확인 · 응답 JSON / 토큰 / 원가</summary><p>POST /api/suggest · 응답 상태 ${escape(r.httpStatus||200)} · fallback: ${r.fallback?'true':'false'} · ${escape(r.model)}</p>${usage?`<div class="usage-grid"><div>입력 토큰<strong>${usage.inputTokens}</strong></div><div>출력 토큰<strong>${usage.outputTokens}</strong></div><div>추론 토큰<strong>${usage.thinkingTokens}</strong></div><div>유료 단가 환산<strong>${usage.estimatedKrw===null?'계산 미지원':usage.estimatedKrw.toFixed(2)+'원'}</strong></div></div><p>${escape(usage.basis)} 환율 1달러=1,350원, 단가 확인일 ${escape(usage.pricingDate)}. 모델을 변경하면 공식 단가도 다시 확인하세요.</p>`:'<p>이 요청에서 확인 가능한 토큰 사용량이 없습니다. 실제 AI 호출 성공 후 기록하세요.</p>'}<button class="button small secondary" data-action="download-response">실제 응답 JSON 저장</button><button class="button small secondary" data-action="download-cost">원가 기록 CSV 저장</button><pre>${escape(JSON.stringify(r.raw,null,2))}</pre></details>`;
+ const html=`<div class="section-heading"><div><span class="eyebrow">YOUR PERSONAL EDIT</span><h2>${r.fallback?'코디 예시 결과':'AI 코디 분석 결과'}</h2></div><a class="text-link" href="#consult">다시 상담하기 ↗</a></div><div class="result-meta"><span class="badge ${r.fallback?'example':'ai'}">${r.fallback?'예시 결과 · 대체 응답':'실제 AI 응답'}</span><span>${r.source==='mock'?(r.dataSource==='db'?'Supabase 예시 옷장':'MOCK 옷장'):'내가 수정한 옷장'} · ${escape(r.occasion)}</span><span>${escape(new Date(r.generatedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</span></div>${r.fallback?`<div class="notice" role="status"><b>지금은 예시를 보여 드려요.</b><br>${escape(reasonText[r.reason]||'AI 응답 대신 기본 예시를 표시합니다.')}</div>`:''}<p class="analysis-summary">${escape(r.summary)}</p><div class="outfit-grid">${r.outfits.map((o,i)=>`<article class="outfit"><span class="outfit-index">LOOK / 0${i+1}</span><h3>${escape(o.title)}</h3><ul>${o.itemIds.map(id=>`<li>${escape(byId.get(id)?.name||'삭제된 의류')}</li>`).join('')}</ul><p class="reason">${escape(o.reason)}</p><p class="tip">${escape(o.tip)}</p><button class="button secondary" data-save-outfit="${i}">${state.records.some(x=>x.analysisKey===r.generatedAt+'-'+i)?'저장됨 · 기록 보기':'이 코디 저장 ↗'}</button></article>`).join('')}</div><details class="lab"><summary>실습 확인 · 응답 JSON / 토큰 / 원가</summary><p>POST /api/suggest · 응답 상태 ${escape(r.httpStatus||200)} · fallback: ${r.fallback?'true':'false'} · ${escape(r.model)}</p>${usage?`<div class="usage-grid"><div>입력 토큰<strong>${usage.inputTokens}</strong></div><div>출력 토큰<strong>${usage.outputTokens}</strong></div><div>추론 토큰<strong>${usage.thinkingTokens}</strong></div><div>유료 단가 환산<strong>${usage.estimatedKrw===null?'계산 미지원':usage.estimatedKrw.toFixed(2)+'원'}</strong></div></div><p>${escape(usage.basis)} 환율 1달러=1,350원, 단가 확인일 ${escape(usage.pricingDate)}. 모델을 변경하면 공식 단가도 다시 확인하세요.</p>`:'<p>이 요청에서 확인 가능한 토큰 사용량이 없습니다. 실제 AI 호출 성공 후 기록하세요.</p>'}<button class="button small secondary" data-action="download-response">실제 응답 JSON 저장</button><button class="button small secondary" data-action="download-cost">원가 기록 CSV 저장</button><pre>${escape(JSON.stringify(r.raw,null,2))}</pre></details>`;
  hosts.forEach(h=>h.innerHTML=html);
 }
 function setBusy(value){busy=value;document.querySelectorAll('[data-analyze-button],[data-action="quick-analyze"],[data-action="failure-test"]').forEach(b=>b.disabled=value);renderAnalysis();}
@@ -70,7 +106,7 @@ async function analyze({quick=false,failure=false}={}){
   const raw=await response.json();
   if(!response.ok)throw new Error(raw.error||'요청을 처리하지 못했습니다.');
   if(!Array.isArray(raw.outfits)||raw.outfits.length!==3||typeof raw.fallback!=='boolean')throw new Error('응답 형식을 확인해 주세요.');
-  state.analysis={...raw,raw,items,httpStatus:response.status};persist();
+  state.analysis={...raw,raw,items,httpStatus:response.status,dataSource:response.headers.get('x-data-source')||dataSource};persist();
   toast(raw.fallback?'예시 결과를 표시했습니다. 안내 내용을 확인해 주세요.':'AI 코디 분석이 완료됐습니다.');
  }catch(error){toast(error.name==='TimeoutError'?'서버 응답이 늦어지고 있어요. 다시 시도해 주세요.':error.message||'연결을 확인한 뒤 다시 시도해 주세요.');}
  finally{setBusy(false);const host=document.querySelector(`[data-result-place="${current==='home'?'home':'consult'}"]`);host?.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -98,6 +134,17 @@ document.addEventListener('click',event=>{
  if(el.dataset.rating){const r=state.records.find(x=>x.id===activeRecord);if(r){r.rating=Number(el.dataset.rating);r.status='착용 완료';persist();render();showRecord(activeRecord);toast('만족도를 저장했습니다.');}}
  switch(el.dataset.action){
  case 'reload':load();break;
+ case 'check-access':{
+   el.disabled=true;$('access-result').textContent='공개키 권한을 확인하고 있어요…';
+   fetch('/api/database-check',{method:'POST',signal:AbortSignal.timeout(12000)}).then(r=>r.json()).then(result=>{
+    if(!result.rows){$('access-result').textContent=result.error||'다시 시도해 주세요.';return;}
+    $('access-result').innerHTML=`<p><b>${result.ok?'읽기 허용 · 쓰기 거부 확인 완료':'권한 또는 연결 설정을 확인해 주세요'}</b></p><div class="access-table"><table><thead><tr><th>표</th><th>동작</th><th>HTTP</th><th>결과</th></tr></thead><tbody>${result.rows.map(r=>`<tr><td>${escape(r.table)}</td><td>${escape(r.operation)}</td><td>${escape(r.status)}</td><td>${r.pass?'통과':'확인 필요'} · ${r.operation==='select'?escape(r.count??'?')+'행':escape(r.code||'응답 없음')}</td></tr>`).join('')}</tbody></table></div>`;
+   }).catch(()=>$('access-result').textContent='확인 요청에 실패했어요. 다시 시도해 주세요.').finally(()=>el.disabled=false);
+   break;
+ }
+
+ case 'history-prev':historyPage--;renderHistory();break;
+ case 'history-next':historyPage++;renderHistory();break;
  case 'quick-analyze':analyze({quick:true});break;
  case 'failure-test':analyze({failure:true});break;
  case 'add-item':if(state.wardrobe.length>=40){toast('이번 시제품은 옷을 최대 40개까지 등록할 수 있습니다.');break;}$('item-form').reset();$('item-dialog').showModal();break;

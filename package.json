@@ -1,8 +1,8 @@
 {
   "name": "ieobom-week4",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "입어봄 5주차: AI 코디 분석, 작동하는 5개 메뉴, 모바일 대응",
+  "description": "입어봄 6주차: Supabase 공개 예시 데이터, AI 코디 분석, DB 장애 대체 응답",
   "engines": {
     "node": "22.x"
   },

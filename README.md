@@ -1,55 +1,26 @@
-# 입어봄 5주차 통합 업데이트 · 0.2.0
+# 입어봄 · 6주차 Supabase 연결
 
-기존 ieobom-week4 Vercel 프로젝트에 올리는 업데이트입니다. 새 프로젝트를 만들 필요 없습니다.
+프로필 1개, 의류 12벌, 코디 기록 20개를 Supabase에서 읽는 Next.js 앱입니다. 모든 초기 데이터는 가상입니다. 5주차의 AI 분석과 브라우저 저장 버튼 기능을 유지합니다.
 
-## 가장 빠른 적용
+사용자 안내: `public/GUIDE.html` 또는 `docs/GUIDE.md`. 표 설계: `docs/TABLE_DESIGN.md`.
 
-1. 이 ZIP을 새 폴더에 완전히 압축 해제합니다.
-2. 기존 GitHub `ieobom-week4` 저장소에서 **Add file → Upload files**를 엽니다.
-3. `package.json`이 보이는 위치의 파일과 폴더를 모두 업로드 상자에 끌어놓습니다. ZIP 자체나 바깥 폴더는 올리지 않습니다. `app`, `lib`, `data`, `public` 등은 폴더째 끌어놓습니다.
-4. **Commit changes**를 누릅니다. 기존 파일은 새 내용으로 교체되고 새 파일은 추가됩니다. `.env.local`, `node_modules`, `.next`는 올리지 않습니다.
-5. Google AI Studio https://aistudio.google.com/apikey 에서 본인 API 키를 발급받습니다. 키는 채팅·카톡·GitHub에 붙이지 않습니다.
-6. Vercel의 기존 프로젝트 → **Settings → Environment Variables**에 아래 두 항목을 입력합니다. 최소 Production 환경을 선택하고 저장합니다.
+## 실행
 
-| 이름 | 값 |
-|---|---|
-| LLM_API_KEY | 본인이 발급받은 실제 키 |
-| LLM_MODEL | gemini-3.5-flash-lite |
+Node.js 22에서 `npm ci`, `npm run dev`. 검사: `npm test`, `npm run build`.
+`.env.example`을 참고하여 실제 값은 `.env.local` 또는 Vercel 환경변수에만 넣습니다.
 
-7. **Deployments → 최신 배포의 메뉴 → Redeploy**를 누르고 Ready를 기다립니다. 파일 업로드로 자동 배포가 먼저 시작되어도 키 등록 이후 다시 배포해야 합니다.
-8. https://ieobom-week4.vercel.app 에서 **AI 코디 분석**을 누릅니다. ‘실제 AI 응답’ 표시와 `fallback:false`가 나와야 실제 연결 성공입니다.
+## API
 
-‘AI 키가 아직 설정되지 않았습니다’가 나오면 화면과 버튼은 동작하지만 실제 AI 연결은 완료되지 않은 상태입니다. 환경변수 이름·적용 환경·재배포를 확인하세요. 무료 티어가 가능한 모델이라도 계정별 할당량 제한이 있을 수 있습니다. 유료 결제는 자동으로 요구하거나 진행하지 않습니다.
+- GET `/api/dashboard`: DB 성공 시 `x-data-source: db`, 설정 누락·DB 오류 시 동일 JSON 형태의 파일 데이터와 `mock`. DB 전체 시간 제한 5초.
+- POST `/api/suggest`: 기존 Gemini 분석. 공통 옷장도 DB에서 읽습니다. AI 실패 시 검증된 대체 코디와 `fallback: true`.
+- POST `/api/database-check`: 같은 사이트의 확인 버튼용. 공개 키로 SELECT/INSERT/UPDATE/DELETE 권한을 실제 검사합니다. 무작위 미존재 ID와 의도적으로 무효인 INSERT만 사용합니다. 실제 행을 생성·수정·삭제하지 않습니다.
 
-## 오늘 확인할 세 가지
+Supabase REST 요청은 서버 `lib/dashboard-data.mjs`에 모았습니다. `SUPABASE_SECRET_KEY`는 서버 전용이며 공개 키는 별도 권한 검사에만 사용합니다. 새로운 SDK 의존성을 추가하지 않았습니다.
 
-- MOCK 옷장 → /api/suggest → 실제 AI → 대시보드 3개 코디
-- 내 옷장·코디 상담·착용 기록·스타일 프로필의 버튼 동작
-- 같은 배포 주소를 휴대폰에서 열고 결과 표시
+`supabase/001_init.sql`은 세 표·제약·RLS·읽기 정책·33행 초기 데이터를 생성합니다. 재실행 시 기존 값은 유지합니다. `002`는 공개 역할 읽기, `003`은 수정 거부, `004`는 RLS/권한 조회입니다.
 
-개인 데이터는 브라우저별 저장입니다. 폰과 PC의 기록이 자동 동기화되는 버전은 아닙니다.
+## 범위
 
-## 제출 자료
+공통 자료는 DB, 개인 수정은 localStorage입니다. 로그인이나 사용자의 AI 결과를 DB에 쓰는 기능은 없습니다. 기존 브라우저 데이터는 기준 데이터와 차이만 합쳐서 최신 DB 값이 가려지지 않도록 했습니다. 홈 5건, 기록 페이지 10건씩 표시합니다.
 
-사이트의 `/GUIDE.html`에 캡처와 제출 순서가 있습니다. `/PRD.html`은 변경점이 표시된 v1.1입니다. 기존 `PRD.pdf`는 4주차 원본 참고용이며, 이번 제출에는 HTML 링크를 쓰세요.
-
-코디 분석 결과 아래 ‘실습 확인’을 펼치면 실제 응답 JSON과 토큰 사용량을 볼 수 있습니다. ‘원가 기록 CSV 저장’으로 현재 응답의 수치를 내려받고, 기존 정의서 게이트③ 목표와의 비교 문장을 직접 작성합니다. 아직 호출하지 않은 토큰 수를 실측값으로 제출하지 마세요.
-
-## 로컬 실행(선택)
-
-Node.js 22.x 권장. 프로젝트 폴더에서 `npm ci`, `npm run dev`. Windows는 `START_LOCAL.cmd`로 실행할 수 있습니다. `.env.example`을 `.env.local`로 복사한 뒤 개인 편집기로 키를 직접 입력하고 서버를 재시작합니다. 로컬 실행은 Vercel 제출에 필수는 아닙니다.
-
-검증: `npm test`, `npm run build`. 테스트의 AI 성공 경로는 모의 공급자 응답으로 검증하며 실제 API 키를 사용하지 않습니다. 유료 API 실제 성공 여부는 배포 후 확인해야 합니다.
-
-## 파일 안내
-
-- app/api/dashboard/route.ts: 기본 MOCK 데이터
-- app/api/suggest/route.ts: POST 입력 검증·간이 호출 제한
-- lib/ai.mjs: 실제 Gemini 호출 한 곳, JSON 검증, 대체 응답, 토큰 원가
-- lib/dashboard-view.mjs / public/dashboard.mjs / public/dashboard.css: 화면·버튼·모바일 스타일
-- data/dashboard.json: 예시 옷장 12벌·프로필·기록 5건
-- PRD.md / public/PRD.html: PRD v1.1
-
-## 한계
-
-사진 등록·이미지 분석·자동 취향 학습·로그인·DB는 없습니다. 서버 메모리 호출 제한은 인스턴스별 교육용 장치이므로 영구적인 비용 상한이 아닙니다. Google API의 실제 할당량과 결제 설정을 확인하세요.
+자동 테스트는 대체 응답·응답 형식·키 비노출·권한 검사 요청·기존 버튼·브라우저 데이터 보존을 확인합니다. 실제 DB·Vercel·휴대폰은 배포 후 확인해야 합니다. `docs/TEST_REPORT.md` 참고.
