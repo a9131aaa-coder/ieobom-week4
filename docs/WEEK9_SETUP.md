@@ -17,6 +17,15 @@ Codex가 이어서 사용할 실행 순서입니다. 8주차 운영 자료와 �
 
 2026-11-28 관리 화면에서 확인한 현재 값은 `Site URL`이 `http://localhost:3000`이고 `Redirect URLs`는 비어 있었습니다. 아래의 `SiteURL` 이메일 템플릿은 이 설정 주소로 연결됩니다. 미리보기에서 보내는 메일도 실제로 어느 버전의 앱으로 열리는지 확인하세요.
 
+### 9주차 미리보기 인증
+
+Vercel 고정 브랜치 주소는 `https://ieobom-week4-git-codex-week9-auth-ieobom.vercel.app`입니다. Supabase의 기본 `ConfirmationURL` 이메일 템플릿으로 미리보기를 검사할 때 `Redirect URLs`에 다음 두 주소를 등록합니다.
+
+- `https://ieobom-week4-git-codex-week9-auth-ieobom.vercel.app/auth/callback`
+- `https://ieobom-week4-git-codex-week9-auth-ieobom.vercel.app/auth/callback?next=/account/update-password`
+
+이 방식에서는 가입이나 재설정을 요청한 브라우저에서 이메일 링크를 엽니다. 아래의 `SiteURL` 템플릿은 9주차가 운영 주소에 올라간 뒤 그 주소용으로 적용합니다.
+
 권장 이메일 링크:
 
 ```text
@@ -40,6 +49,8 @@ Reset password:
 `.env.example`의 이름을 사용합니다. 공개 URL과 publishable 키는 인증 클라이언트에 필요합니다. secret/LLM 키는 서버 전용이며 `NEXT_PUBLIC_` 접두사를 붙이지 않습니다. 공개 환경변수 변경 후 Vercel 재빌드가 필요합니다.
 
 운영 DB에 9주차 SQL을 반영했습니다. 앱은 8주차 운영 배포와 9주차 미리보기를 구분해 확인합니다.
+
+Vercel에서 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 `codex/week9-auth` 브랜치에 지정했습니다. 이 두 항목으로 브라우저 로그인과 개인 API가 Supabase에 연결됩니다. 공통 자료와 코디 챗봇의 실서버 검사에는 각각 기존 공통 DB와 Gemini의 서버 환경변수가 필요합니다. 이 미리보기에는 운영 서버 비밀 키가 설정되지 않았습니다.
 
 ## 완료 기준
 
