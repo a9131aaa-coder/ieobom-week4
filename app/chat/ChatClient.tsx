@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { AUTH_CHANGE_KEY } from '../../lib/auth-input.mjs';
 
 type Source = {
   id: string;
@@ -25,6 +26,7 @@ type Metrics = {
 };
 
 type ChatResponse = {
+  scope?: 'personal' | 'guest';
   status: 'answered' | 'no_evidence' | 'fallback';
   answer: string;
   sources: Source[];
@@ -34,6 +36,10 @@ type ChatResponse = {
   model: string;
   embeddingModel: string;
 };
+
+type ChatSession =
+  | { status: 'checking' | 'error' }
+  | { status: 'ready'; userId: string | null };
 
 const examples = [
   { label: '니트와 로퍼', question: '크림 니트와 로퍼를 함께 쓴 코디를 찾아줘.' },
@@ -103,6 +109,7 @@ function ResponseInfo({ response }: { response: ChatResponse }) {
 }
 
 export default function ChatClient() {
+  const [session, setSession] = useState<ChatSession>({ status: 'checking' });
   const [question, setQuestion] = useState('');
   const [lastQuestion, setLastQuestion] = useState('');
   const [response, setResponse] = useState<ChatResponse | null>(null);
@@ -111,18 +118,85 @@ export default function ChatClient() {
   const textarea = useRef<HTMLTextAreaElement>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const activeRequest = useRef<AbortController | null>(null);
+  const activeSessionCheck = useRef<AbortController | null>(null);
+  const verifiedUserId = useRef<string | null | undefined>(undefined);
 
-  useEffect(() => () => {
+  const clearChat = useCallback(() => {
     activeRequest.current?.abort();
     activeRequest.current = null;
+    setQuestion('');
+    setLastQuestion('');
+    setResponse(null);
+    setError('');
+    setLoading(false);
   }, []);
+
+  const checkSession = useCallback(async (resetChat = false) => {
+    if (resetChat) {
+      activeSessionCheck.current?.abort();
+      clearChat();
+    } else if (activeSessionCheck.current) return;
+
+    const controller = new AbortController();
+    activeSessionCheck.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 10_000);
+    setSession({ status: 'checking' });
+
+    try {
+      const result = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
+      const data = await result.json() as { user?: { id?: unknown } | null };
+      if (activeSessionCheck.current !== controller) return;
+      const userId = data?.user === null ? null : data?.user?.id;
+      if (!result.ok || (userId !== null && (typeof userId !== 'string' || !userId))) {
+        throw new Error('로그인 상태를 확인하지 못했어요.');
+      }
+      if (verifiedUserId.current !== userId) clearChat();
+      verifiedUserId.current = userId;
+      setSession({ status: 'ready', userId });
+    } catch {
+      if (activeSessionCheck.current !== controller) return;
+      verifiedUserId.current = undefined;
+      clearChat();
+      setSession({ status: 'error' });
+    } finally {
+      window.clearTimeout(timeout);
+      if (activeSessionCheck.current === controller) activeSessionCheck.current = null;
+    }
+  }, [clearChat]);
+
+  useEffect(() => {
+    const onAuthChange = () => { void checkSession(true); };
+    const onStorage = (event: StorageEvent) => { if (event.key === AUTH_CHANGE_KEY) onAuthChange(); };
+    const onFocus = () => { void checkSession(); };
+    const onVisibility = () => { if (document.visibilityState === 'visible') onFocus(); };
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) onAuthChange(); };
+    void checkSession();
+    window.addEventListener('ieobom:auth-changed', onAuthChange);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('ieobom:auth-changed', onAuthChange);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisibility);
+      activeSessionCheck.current?.abort();
+      activeSessionCheck.current = null;
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+    };
+  }, [checkSession]);
 
   useEffect(() => {
     if (response || error) resultHeading.current?.focus();
   }, [response, error]);
 
   async function ask(rawQuestion: string) {
-    if (activeRequest.current) return;
+    if (session.status !== 'ready' || activeSessionCheck.current || activeRequest.current) return;
+    const userId = session.userId;
+    if (userId !== verifiedUserId.current) return;
     const text = rawQuestion.trim();
     if (!text || text.length > 300) {
       setResponse(null);
@@ -141,17 +215,27 @@ export default function ChatClient() {
     try {
       const result = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'X-Ieobom-User': userId ?? 'guest' },
         body: JSON.stringify({ question: text }),
         signal: controller.signal,
       });
       const data: unknown = await result.json().catch(() => null);
       if (activeRequest.current !== controller) return;
       if (!result.ok) {
+        if (data && typeof data === 'object' && 'code' in data && (data.code === 'account_changed' || data.code === 'login_required')) {
+          void checkSession(true);
+          return;
+        }
         const message = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : '';
         throw new Error(result.status >= 400 && result.status < 500 && message ? message : '연결이 원활하지 않아 답변을 가져오지 못했어요. 잠시 후 다시 시도해 주세요.');
       }
       if (!isChatResponse(data)) throw new Error('답변과 근거를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      if ((data.scope === 'personal') !== (userId !== null)) {
+        void checkSession(true);
+        return;
+      }
       setResponse(data);
     } catch (caught) {
       if (activeRequest.current !== controller) return;
@@ -172,6 +256,8 @@ export default function ChatClient() {
     void ask(question);
   }
 
+  const ready = session.status === 'ready';
+  const personal = ready && session.userId !== null;
   const sources = response?.status === 'answered' ? response.sources : [];
 
   return (
@@ -193,38 +279,44 @@ export default function ChatClient() {
               <p>기억이 가물가물한 조합도, 다시 입고 싶은 스타일도.<br />저장된 코디 기록을 찾아 근거와 함께 답해요.</p>
             </div>
 
-            <div className="chat-scope"><span className="chat-scope-label">검색 범위</span><p><strong>공통 예시 코디 기록</strong>을 검색합니다. 내 계정이나 이 브라우저에서 개인적으로 추가·수정한 기록은 포함되지 않아요.</p></div>
+            <div className="chat-scope" aria-live="polite">
+              <span className="chat-scope-label">검색 범위</span>
+              {session.status === 'checking' && <p>로그인 상태를 확인하고 있어요.</p>}
+              {session.status === 'error' && <p>로그인 상태를 확인하지 못했어요. <button className="button secondary small" type="button" onClick={() => void checkSession()}>다시 확인</button></p>}
+              {personal && <p><strong>내 코디 기록</strong>을 검색합니다. 이 계정에 저장한 코디만 답변에 사용해요.</p>}
+              {ready && !personal && <p><strong>공통 예시 코디 기록</strong>을 검색합니다. <a href="/login">로그인</a>하면 내 계정에 저장한 코디를 찾을 수 있어요.</p>}
+            </div>
 
-            <form className="chat-form" onSubmit={submit} aria-busy={loading}>
+            <form className="chat-form" onSubmit={submit} aria-busy={loading || session.status === 'checking'}>
               <label htmlFor="chat-question">어떤 코디가 궁금한가요?</label>
               <p id="chat-question-help" className="chat-form-help">질문마다 새로 검색해요. 이전 답변을 기억하지 않으니 옷이나 상황을 구체적으로 적어 주세요.</p>
-              <div className="chat-examples" aria-label="예시 질문">{examples.map(example => <button type="button" key={example.label} title={example.question} aria-label={`예시 질문: ${example.question}`} disabled={loading} onClick={() => { setQuestion(example.question); setError(''); textarea.current?.focus(); }}>{example.label}<span aria-hidden="true">↗</span></button>)}</div>
-              <textarea ref={textarea} id="chat-question" name="question" value={question} onChange={event => setQuestion(event.target.value)} maxLength={300} rows={3} required disabled={loading} aria-describedby="chat-question-help chat-question-count" placeholder="예: 니트와 함께 입을 하의를 고른 코디 기록이 있어?" />
-              <div className="chat-form-bottom"><span id="chat-question-count">{question.length} / 300자</span><button className="button chat-submit" type="submit" disabled={loading || !question.trim()}>{loading ? '기록을 찾고 있어요…' : '기록에 물어보기'}{!loading && <span aria-hidden="true">↗</span>}</button></div>
+              <div className="chat-examples" aria-label="예시 질문">{examples.map(example => <button type="button" key={example.label} title={example.question} aria-label={`예시 질문: ${example.question}`} disabled={!ready || loading} onClick={() => { setQuestion(example.question); setError(''); textarea.current?.focus(); }}>{example.label}<span aria-hidden="true">↗</span></button>)}</div>
+              <textarea ref={textarea} id="chat-question" name="question" value={ready ? question : ''} onChange={event => setQuestion(event.target.value)} maxLength={300} rows={3} required disabled={!ready || loading} aria-describedby="chat-question-help chat-question-count" placeholder="예: 니트와 함께 입을 하의를 고른 코디 기록이 있어?" />
+              <div className="chat-form-bottom"><span id="chat-question-count">{ready ? question.length : 0} / 300자</span><button className="button chat-submit" type="submit" disabled={!ready || loading || !question.trim()}>{loading ? '기록을 찾고 있어요…' : '기록에 물어보기'}{!loading && <span aria-hidden="true">↗</span>}</button></div>
             </form>
 
-            {loading && <div className="chat-loading" role="status"><span aria-hidden="true" /><p>질문과 비슷한 기록을 찾아 답변을 준비하고 있어요.</p></div>}
+            {ready && loading && <div className="chat-loading" role="status"><span aria-hidden="true" /><p>질문과 비슷한 기록을 찾아 답변을 준비하고 있어요.</p></div>}
 
-            {!loading && !response && !error && <div className="chat-start-note"><Icon><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></Icon><p>기록에 없는 내용은 찾지 못했다고 알려드려요.<br /><span>새로운 코디를 제안받고 싶다면 <a href="/#consult">코디 상담</a>을 이용해 주세요.</span></p></div>}
+            {ready && !loading && !response && !error && <div className="chat-start-note"><Icon><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></Icon><p>기록에 없는 내용은 찾지 못했다고 알려드려요.<br /><span>새로운 코디를 제안받고 싶다면 <a href="/#consult">코디 상담</a>을 이용해 주세요.</span></p></div>}
 
-            {!loading && (response || error) && <section className={`chat-result${error || response?.status === 'fallback' ? ' chat-result-failed' : ''}`} aria-labelledby="chat-result-title" aria-live="polite">
+            {ready && !loading && (response || error) && <section className={`chat-result${error || response?.status === 'fallback' ? ' chat-result-failed' : ''}`} aria-labelledby="chat-result-title" aria-live="polite">
               <div className="chat-result-top"><span className="eyebrow">{error || response?.status === 'fallback' ? 'PLEASE TRY AGAIN' : response?.status === 'no_evidence' ? 'NO MATCHING EVIDENCE' : 'FROM YOUR STYLE ARCHIVE'}</span><h2 id="chat-result-title" tabIndex={-1} ref={resultHeading}>{error || response?.status === 'fallback' ? '답변을 가져오지 못했어요' : response?.status === 'no_evidence' ? '답할 수 있는 기록을 찾지 못했어요' : '기록에서 찾은 답변'}</h2></div>
               {lastQuestion && <p className="chat-asked-question"><span>질문</span>{lastQuestion}</p>}
               <p className="chat-answer">{error || response?.answer}</p>
               {(error || response?.status === 'fallback') && <button className="button secondary small" type="button" onClick={() => void ask(lastQuestion || question)}>같은 질문 다시 시도</button>}
               {response?.status === 'no_evidence' && <p className="chat-no-evidence-note">질문에 답할 근거가 없어 출처 카드를 표시하지 않았어요. 다른 옷이나 상황으로 질문해 보세요.</p>}
 
-              {sources.length > 0 && <div className="chat-sources"><div className="chat-sources-heading"><h3>답변에 사용한 코디 기록 <span>{sources.length}</span></h3><p>정답 확률이 아닌 질문과 기록의 유사도</p></div><div className="chat-source-grid">{sources.map(source => {
+              {sources.length > 0 && <div className="chat-sources"><div className="chat-sources-heading"><h3>답변에 사용한 코디 기록 <span>{sources.length}</span></h3>{!personal && <p>정답 확률이 아닌 질문과 기록의 유사도</p>}</div><div className="chat-source-grid">{sources.map(source => {
                 const thumbnail = safeThumbnail(source.thumbnail);
                 return <article className={`chat-source-card${thumbnail ? ' has-image' : ''}`} key={source.id}>
                   {thumbnail && <img src={thumbnail} alt="" width="120" height="150" loading="lazy" />}
-                  <div className="chat-source-body"><div className="chat-source-meta"><time dateTime={/^\d{4}-\d{2}-\d{2}$/.test(source.date) ? source.date : undefined}>{displayDate(source.date)}</time><span>유사도 {Math.round(source.similarity * 100)}%</span></div><h4>{source.title}</h4><p>{sourceExcerpt(source.content)}</p></div>
+                  <div className="chat-source-body"><div className="chat-source-meta"><time dateTime={/^\d{4}-\d{2}-\d{2}$/.test(source.date) ? source.date : undefined}>{displayDate(source.date)}</time>{!personal && <span>유사도 {Math.round(source.similarity * 100)}%</span>}</div><h4>{source.title}</h4><p>{sourceExcerpt(source.content)}</p></div>
                 </article>;
               })}</div><a className="chat-archive-link" href="/#history">전체 코디 기록 보기 <span aria-hidden="true">↗</span></a></div>}
-              {response && <ResponseInfo response={response} />}
+              {response && !personal && <ResponseInfo response={response} />}
             </section>}
 
-            <footer className="page-footer chat-footer"><p>공통 데이터는 수업용 예시입니다. 답변은 검색한 기록을 바탕으로 하며, 전체 기록의 개수를 집계하지 않습니다.</p><a href="/#home">홈 대시보드로 ↗</a></footer>
+            <footer className="page-footer chat-footer">{ready && !personal && <p>공통 데이터는 수업용 예시입니다. 답변은 검색한 기록을 바탕으로 하며, 전체 기록의 개수를 집계하지 않습니다.</p>}<a href="/#home">홈 대시보드로 ↗</a></footer>
           </main>
         </div>
       </div>

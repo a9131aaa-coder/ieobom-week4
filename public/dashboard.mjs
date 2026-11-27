@@ -77,7 +77,7 @@ function showAccount(){
  $('wardrobe-scope-copy').textContent=personal?'등록·수정한 옷은 내 계정에 저장됩니다. 같은 계정으로 로그인하면 다른 기기에서도 볼 수 있어요.':'공통 예시 옷장입니다. 수정한 내용은 이 브라우저에만 저장되며 계정에 자동으로 옮겨지지 않아요.';
  $('history-scope-copy').textContent=personal?'내가 저장한 코디만 표시합니다. AI 분석과 예시 결과를 구분하고, 착용 후 만족도를 남길 수 있어요.':'공통 예시 기록입니다. 둘러보기에서 저장한 결과는 이 브라우저에만 남습니다.';
  $('profile-scope-copy').textContent=personal?'내 계정에 저장합니다. 내 옷장으로 코디를 분석할 때 이 취향을 참고해요.':'이 브라우저에 저장됩니다. 코디 상담에서 내가 수정한 옷장을 선택하면 반영돼요.';
- $('footer-scope-copy').textContent=personal?'내 옷장과 코디 기록은 계정별로 보관합니다. 기록 챗봇은 공통 예시 코디만 검색하며 개인 기록은 포함하지 않습니다.':'예시 둘러보기의 수정 내용은 이 브라우저에만 저장됩니다. 회원가입 후 개인 옷장은 빈 상태로 시작해요.';
+ $('footer-scope-copy').textContent=personal?'내 옷장과 코디 기록은 계정별로 보관합니다. 기록 챗봇에서는 내 계정에 저장한 코디를 검색할 수 있어요.':'예시 둘러보기의 수정 내용은 이 브라우저에만 저장됩니다. 회원가입 후 개인 옷장은 빈 상태로 시작해요.';
  $('analysis-banner-copy').textContent=personal?'내 계정에 저장한 옷장과 취향으로 코디 3가지와 이유를 제안합니다.':'공통 예시 옷장과 취향으로 코디 3가지와 이유를 제안합니다.';
  document.querySelector('[data-action="check-access"]').hidden=personal;
  $('data-source').innerHTML=personal?'<option value="personal">내 계정의 옷장과 스타일 프로필</option>':'<option value="mock">공통 예시 옷장</option><option value="local">이 브라우저에서 수정한 옷장과 프로필</option>';
