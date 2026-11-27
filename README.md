@@ -1,4 +1,10 @@
-# 입어봄 · 6주차 Supabase 연결
+# 입어봄 · 8주차 코디 기록 RAG
+
+기존 6주차 기능에 `/chat` 코디 기록 챗봇을 추가했습니다. Supabase의 공통 예시 코디 기록을 벡터 검색하고, 답변에 사용한 기록만 출처 카드로 표시합니다. 로그인·개인 기록 동기화는 다음 단계입니다.
+
+**8주차 설치·검증 순서:** [docs/WEEK8_SETUP.md](docs/WEEK8_SETUP.md). 코드를 배포하는 것 외에 SQL 실행과 실제 임베딩 생성이 필요합니다. 키가 없거나 검색 준비가 끝나지 않았으면 챗봇은 오류 안내를 표시하며 예시 답변을 실제 답변처럼 보여 주지 않습니다.
+
+## 기존 기능
 
 프로필 1개, 의류 12벌, 코디 기록 20개를 Supabase에서 읽는 Next.js 앱입니다. 모든 초기 데이터는 가상입니다. 5주차의 AI 분석과 브라우저 저장 버튼 기능을 유지합니다.
 
@@ -10,6 +16,8 @@ Node.js 22에서 `npm ci`, `npm run dev`. 검사: `npm test`, `npm run build`.
 `.env.example`을 참고하여 실제 값은 `.env.local` 또는 Vercel 환경변수에만 넣습니다.
 
 ## API
+
+- POST `/api/chat`: 질문 임베딩 → 공통 코디 벡터 검색 → 실제 인용 근거로 답변. 검색 결과 없음은 정상 거부, 설정·연결 실패는 `fallback: true`.
 
 - GET `/api/dashboard`: DB 성공 시 `x-data-source: db`, 설정 누락·DB 오류 시 동일 JSON 형태의 파일 데이터와 `mock`. DB 전체 시간 제한 5초.
 - POST `/api/suggest`: 기존 Gemini 분석. 공통 옷장도 DB에서 읽습니다. AI 실패 시 검증된 대체 코디와 `fallback: true`.

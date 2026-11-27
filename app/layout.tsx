@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '입어봄 — 나를 알아가는 스타일 대시보드',
-  description: '내 취향을 기억하는 AI 코디 컨설턴트. 6주차 Supabase 연결과 AI 코디 분석 시제품. 기본 데이터는 예시입니다.',
+  description: '가진 옷으로 코디를 추천받고, 저장된 공통 코디 기록을 찾아 근거와 함께 답하는 AI 스타일 도우미. 기본 데이터는 예시입니다.',
   robots: { index: false, follow: false },
 };
 

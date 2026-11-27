@@ -1,8 +1,8 @@
 {
   "name": "ieobom-week4",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
-  "description": "입어봄 6주차: Supabase 공개 예시 데이터, AI 코디 분석, DB 장애 대체 응답",
+  "description": "입어봄 8주차: 공통 예시 코디 기록을 검색해 근거와 함께 답하는 RAG 챗봇",
   "engines": {
     "node": "22.x"
   },
@@ -11,10 +11,14 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "embed": "node --env-file-if-exists=.env.local scripts/embed.mjs",
+    "embed:dry-run": "npm run embed -- --dry-run",
+    "embed:verify": "npm run embed -- --verify",
+    "rag:check": "node scripts/check-rag.mjs"
   },
   "dependencies": {
-    "next": "16.4.2",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
