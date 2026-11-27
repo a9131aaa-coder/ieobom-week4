@@ -7,6 +7,9 @@ let currentUser=null, scope='unknown', epoch=0, mutationBusy=false, editingItem=
 const requests=new Set();
 const AUTH_MARKER='ieobom-auth-change';
 const profileKeys=['style','colors','avoid','comfort','goal'];
+const photoEndpoint='/api/me/wardrobe/analyze-photo';
+const garmentCategories=['상의','하의','아우터','신발','가방'];
+let photoDraft=null, photoPreviewUrl=null;
 function toast(message){
  const notice=$('toast');
  const host=document.querySelector('dialog[open]')||document.body;
@@ -46,7 +49,8 @@ async function requestJSON(url,init={},timeoutMs=12000,requestEpoch=epoch){
  const controller=new AbortController();requests.add(controller);
  const timer=setTimeout(()=>controller.abort(),timeoutMs);
  try{
-  const response=await fetch(url,{...init,credentials:'same-origin',cache:'no-store',signal:controller.signal});
+  const signal=init.signal?AbortSignal.any([init.signal,controller.signal]):controller.signal;
+  const response=await fetch(url,{...init,credentials:'same-origin',cache:'no-store',signal});
   if(requestEpoch!==epoch)throw staleRequest();
   const body=await response.json();
   if(requestEpoch!==epoch)throw staleRequest();
@@ -58,7 +62,11 @@ function clearScope(){
  epoch++;for(const request of requests)request.abort();requests.clear();
  data=null;state=null;scope='unknown';currentUser=null;busy=false;mutationBusy=false;activeRecord=null;editingItem=null;historyPage=0;filter='전체';
  clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
- for(const id of ['item-dialog','record-dialog'])if($(id).open)$(id).close();
+ for(const id of ['item-dialog','record-dialog','photo-dialog'])if($(id).open)$(id).close();
+ resetPhotoImport();
+ if($('avatar-preview')){
+  $('avatar-preview').hidden=true;$('avatar-preview').open=false;$('avatar-preview-form').reset();
+ }
  for(const key of profileKeys)$('profile-'+key).value='';
  $('item-form').reset();$('consult-form').reset();
  for(const id of ['wardrobe-grid','recent-list','history-list','record-detail','access-result'])$(id).textContent='';
@@ -70,6 +78,8 @@ function clearScope(){
 }
 function showAccount(){
  const personal=scope==='personal';
+ $('photo-open').hidden=!personal;
+ if($('avatar-preview'))$('avatar-preview').hidden=!personal;
  $('account-label').textContent=personal?currentUser.email||'내 계정':'예시 둘러보기';
  $('account-login').hidden=personal;$('account-signout').hidden=!personal;
  $('scope-detail').textContent=personal?'로그인한 계정의 옷장·취향·코디 기록만 불러옵니다.':'공통 예시 데이터입니다. 둘러보기에서 수정한 내용은 이 브라우저에만 저장되며 로그인한 계정에 자동으로 옮겨지지 않습니다.';
@@ -130,6 +140,8 @@ async function checkIdentity(){
 function updateControls(){
  document.querySelectorAll('[data-analyze-button],[data-action="quick-analyze"],[data-action="failure-test"]').forEach(el=>el.disabled=busy||mutationBusy||!state);
  document.querySelectorAll('[data-remove-item],[data-edit-item],[data-save-outfit],[data-rating],[data-action="mark-worn"],[data-action="delete-record"],[data-action="add-item"],#item-form button[type="submit"],#profile-form button[type="submit"]').forEach(el=>el.disabled=mutationBusy||!state);
+ $('photo-open').disabled=mutationBusy||!state;
+ $('photo-review').querySelectorAll('input,select,button').forEach(el=>el.disabled=mutationBusy);
  $('account-signout').disabled=false;
 }
 async function privateMutation(path,method,body,apply,message){
@@ -226,6 +238,124 @@ function openItem(id=null){
  if(item)for(const key of ['name','category','color','swatch'])$('item-'+key).value=item[key];
  $('item-dialog').showModal();
 }
+function readGarmentForm(form){
+ const values=new FormData(form);
+ const name=String(values.get('name')||'').trim(),color=String(values.get('color')||'').trim();
+ if(!name||!color){toast('옷 이름과 색상을 입력해 주세요.');return null;}
+ return {name,color,category:String(values.get('category')),swatch:String(values.get('swatch'))};
+}
+function setPhotoPreview(file){
+ if(photoPreviewUrl)URL.revokeObjectURL(photoPreviewUrl);
+ photoPreviewUrl=null;
+ const preview=$('photo-preview');
+ preview.removeAttribute('src');preview.hidden=true;
+ if(file&&typeof URL.createObjectURL==='function'){
+  photoPreviewUrl=URL.createObjectURL(file);
+  preview.src=photoPreviewUrl;preview.hidden=false;
+ }
+}
+function resetPhotoImport(){
+ photoDraft?.controller.abort();
+ photoDraft=null;
+ setPhotoPreview(null);
+ $('photo-form').reset();$('photo-review').reset();
+ $('photo-status').textContent='';$('photo-candidates').replaceChildren();
+ $('photo-picker').hidden=false;$('photo-review').hidden=true;
+ $('photo-form').removeAttribute('aria-busy');
+ $('photo-analyze').disabled=true;$('photo-manual').disabled=true;
+ $('wardrobe-photo').disabled=false;$('photo-source').disabled=false;
+}
+async function openPhotoImport(){
+ if(scope!=='personal'||!state||mutationBusy||$('photo-dialog').open)return;
+ if(state.wardrobe.length>=40){toast('옷은 최대 40개까지 저장할 수 있어요.');return;}
+ resetPhotoImport();
+ const draft={candidates:[],available:false,busy:false,selected:null,controller:new AbortController()};
+ photoDraft=draft;
+ $('photo-dialog').showModal();
+ $('photo-status').textContent='사진 분석 연결을 확인하고 있어요.';
+ try{
+  const {body}=await requestJSON(photoEndpoint,{signal:draft.controller.signal});
+  if(photoDraft!==draft)return;
+  draft.available=body?.available===true;
+  $('photo-analyze').disabled=!draft.available;
+  $('photo-status').textContent=draft.available?'':'지금은 사진 분석을 사용할 수 없어요. 옷 정보는 직접 등록할 수 있어요.';
+ }catch{
+  if(photoDraft===draft)$('photo-status').textContent='사진 분석 연결을 확인하지 못했어요. 잠시 후 다시 열어 주세요.';
+ }
+}
+function validPhoto(file){
+ return file&&file.size>0&&file.size<=4000000&&['image/jpeg','image/png','image/webp'].includes(file.type);
+}
+async function encodeWardrobePhoto(file){
+ const bitmap=await createImageBitmap(file);
+ try{
+  const canvas=document.createElement('canvas'),ratio=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));
+  canvas.width=Math.max(1,Math.round(bitmap.width*ratio));
+  canvas.height=Math.max(1,Math.round(bitmap.height*ratio));
+  const context=canvas.getContext('2d');
+  if(!context)throw new Error('Image processing unavailable');
+  context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
+  context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  return await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.88));
+ }finally{bitmap.close();}
+}
+function showPhotoCandidates(){
+ $('photo-picker').hidden=false;$('photo-review').hidden=true;
+ $('photo-review').reset();$('photo-duplicate').hidden=true;
+ $('photo-candidates').innerHTML=photoDraft.candidates.map((item,i)=>
+  `<button type="button" class="photo-candidate" data-photo-candidate="${i}"><span><strong>${escape(item.name)}</strong><small>${escape(item.category)} · ${escape(item.color)}</small></span><span>확인 ↗</span></button>`).join('');
+}
+function reviewPhotoCandidate(index){
+ const draft=photoDraft;
+ if(!draft||mutationBusy||draft.busy)return;
+ const item=index===-1&&validPhoto($('wardrobe-photo').files[0])?
+  {name:'',category:'상의',color:'',swatch:'#b7b0a3'}:draft.candidates[index];
+ if(!item)return;
+ draft.selected=index;
+ for(const key of ['name','category','color','swatch'])$('photo-item-'+key).value=item[key];
+ $('photo-duplicate').hidden=!state.wardrobe.some(saved=>
+  saved.category===item.category&&saved.name.toLowerCase()===item.name.toLowerCase()&&saved.color.toLowerCase()===item.color.toLowerCase());
+ $('photo-status').textContent='';
+ $('photo-picker').hidden=true;$('photo-review').hidden=false;
+ $('photo-item-name').focus();
+}
+async function analyzeWardrobePhoto(event){
+ event.preventDefault();
+ const draft=photoDraft,userId=currentUser?.id;
+ if(scope!=='personal'||!draft?.available||draft.busy||mutationBusy||!userId)return;
+ const {files}= $('wardrobe-photo'),file=files[0];
+ const source=$('photo-source').value,requestEpoch=epoch;
+ if(!validPhoto(file)){ $('photo-status').textContent='4MB 이하의 JPG, PNG, WebP 파일을 골라 주세요.';return; }
+ draft.busy=true;$('photo-form').setAttribute('aria-busy','true');
+ for(const id of ['wardrobe-photo','photo-source','photo-analyze'])$(id).disabled=true;
+ $('photo-status').textContent='사진에서 옷을 찾고 있어요.';
+ try{
+  let image;
+  try{image=await encodeWardrobePhoto(file);}
+  catch{throw new Error('사진을 열지 못했어요. 지원하는 형식의 다른 사진을 선택해 주세요.');}
+  if(!image||image.size>4000000)throw new Error('사진의 크기를 줄인 뒤 다시 시도해 주세요.');
+  if(photoDraft!==draft||!isCurrent(requestEpoch,userId))return;
+  const body=new FormData();body.append('source',source);body.append('photo',image,'wardrobe.jpg');
+  const {body:result}=await requestJSON(photoEndpoint,{method:'POST',headers:{'X-Ieobom-User':userId},body,signal:draft.controller.signal},25000,requestEpoch);
+  if(photoDraft!==draft||!isCurrent(requestEpoch,userId))return;
+  if(!Array.isArray(result?.candidates)||result.candidates.length>8||!result.candidates.every(item=>
+   typeof item?.name==='string'&&typeof item.color==='string'&&garmentCategories.includes(item.category)&&/^#[0-9a-f]{6}$/i.test(item.swatch)))
+   throw new Error('옷 후보 목록을 확인하지 못했어요. 다시 시도해 주세요.');
+  draft.candidates=result.candidates;
+  setPhotoPreview(null);$('wardrobe-photo').value='';$('photo-manual').disabled=true;showPhotoCandidates();
+  $('photo-status').textContent=draft.candidates.length?`옷 후보 ${draft.candidates.length}개를 찾았어요. 내 옷을 골라 확인해 주세요.`:'사진에서 옷을 찾지 못했어요. 다른 사진을 선택하거나 직접 등록해 주세요.';
+ }catch(error){
+  if(photoDraft!==draft||!isCurrent(requestEpoch,userId))return;
+  if(error.status===401||error.code==='account_changed'){await load();return;}
+  $('photo-status').textContent=error.name==='AbortError'?'사진 분석이 오래 걸렸어요. 다시 시도해 주세요.':
+   error.name==='SyntaxError'?'사진 분석 응답을 확인하지 못했어요. 다시 시도해 주세요.':error.message;
+ }finally{
+  if(photoDraft===draft){
+   draft.busy=false;$('photo-form').removeAttribute('aria-busy');
+   for(const id of ['wardrobe-photo','photo-source','photo-analyze'])$(id).disabled=false;
+  }
+ }
+}
 function updateRecord(patch,message){
  if(!state||mutationBusy)return;const id=activeRecord;const record=state.records.find(r=>r.id===id);if(!record)return;
  if(scope==='personal')return privateMutation('/api/me/outfits/'+encodeURIComponent(id),'PATCH',patch,result=>{if(!result.record?.id)throw new Error('저장 결과를 확인하지 못했어요. 다시 불러와 주세요.');state.records=state.records.map(r=>r.id===id?result.record:r);},message);
@@ -240,6 +370,7 @@ function download(name,content,type){const url=URL.createObjectURL(new Blob([con
 function csvValue(v){let s=String(v??'');if(/^[=+@-]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 document.addEventListener('click',event=>{
  const el=event.target.closest('button,a');if(!el)return;
+ if(el.dataset.photoCandidate!==undefined)reviewPhotoCandidate(Number(el.dataset.photoCandidate));
  if(el.dataset.filter){filter=el.dataset.filter;renderWardrobe();}
  if(el.dataset.editItem)openItem(el.dataset.editItem);
  if(el.dataset.removeItem&&state&&!mutationBusy){const id=el.dataset.removeItem;if(scope==='personal')void privateMutation('/api/me/wardrobe/'+encodeURIComponent(id),'DELETE',undefined,()=>{state.wardrobe=state.wardrobe.filter(w=>w.id!==id);},'옷장에서 삭제했습니다.');else{state.wardrobe=state.wardrobe.filter(w=>w.id!==id);persist();render();toast('옷장에서 삭제했습니다.');}}
@@ -265,6 +396,9 @@ document.addEventListener('click',event=>{
  case 'quick-analyze':analyze({quick:true});break;
  case 'failure-test':analyze({failure:true});break;
  case 'add-item':openItem();break;
+ case 'open-photo':void openPhotoImport();break;
+ case 'photo-manual':reviewPhotoCandidate(-1);break;
+ case 'photo-back':if(photoDraft){photoDraft.selected=null;showPhotoCandidates();}break;
  case 'close-dialog':el.closest('dialog').close();break;
  case 'mark-worn':void updateRecord({status:'착용 완료'},'착용 완료로 표시했습니다.');break;
  case 'delete-record':{if(!state||mutationBusy)break;const id=activeRecord;if(scope==='personal')void privateMutation('/api/me/outfits/'+encodeURIComponent(id),'DELETE',undefined,()=>{state.records=state.records.filter(x=>x.id!==id);activeRecord=null;$('record-dialog').close();},'기록을 삭제했습니다.');else{state.records=state.records.filter(x=>x.id!==id);persist();render();$('record-dialog').close();toast('기록을 삭제했습니다.');}break;}
@@ -275,15 +409,45 @@ document.addEventListener('click',event=>{
 $('consult-form').addEventListener('submit',event=>{event.preventDefault();analyze();});
 $('item-form').addEventListener('submit',event=>{
  event.preventDefault();if(!state||mutationBusy)return;
- const values=new FormData(event.target);const name=String(values.get('name')||'').trim(),color=String(values.get('color')||'').trim();
- if(!name||!color){toast('옷 이름과 색상을 입력해 주세요.');return;}
- const item={name,color,category:String(values.get('category')),swatch:String(values.get('swatch'))};const editId=editingItem;
+ const item=readGarmentForm(event.target);if(!item)return;const editId=editingItem;
  if(scope==='personal')return void privateMutation('/api/me/wardrobe'+(editId?'/'+encodeURIComponent(editId):''),editId?'PATCH':'POST',item,result=>{
   if(!result.item?.id)throw new Error('저장 결과를 확인하지 못했어요. 다시 불러와 주세요.');
   if(editId)state.wardrobe=state.wardrobe.map(w=>w.id===editId?result.item:w);else state.wardrobe.push(result.item);
   filter='전체';editingItem=null;$('item-dialog').close();
  },editId?'옷 정보를 수정했습니다.':'내 계정의 옷장에 등록했습니다.');
  if(editId)state.wardrobe=state.wardrobe.map(w=>w.id===editId?{...w,...item}:w);else state.wardrobe.push({id:crypto.randomUUID(),...item});persist();filter='전체';render();editingItem=null;$('item-dialog').close();toast(editId?'옷 정보를 수정했습니다.':'옷을 등록했습니다.');
+});
+$('photo-dialog').addEventListener('close',()=>{
+ if(!$('photo-dialog').open)resetPhotoImport();
+});
+$('wardrobe-photo').addEventListener('change',event=>{
+ const file=event.target.files[0];
+ const valid=validPhoto(file);
+ setPhotoPreview(valid?file:null);
+ $('photo-manual').disabled=!valid;
+ if(photoDraft){
+  photoDraft.candidates=[];showPhotoCandidates();
+  $('photo-status').textContent=file&&!valid?'4MB 이하의 JPG, PNG, WebP 파일을 골라 주세요.':
+   photoDraft.available?'':'이 사진을 보며 옷 정보를 직접 입력할 수 있어요.';
+ }
+});
+$('photo-form').addEventListener('submit',event=>void analyzeWardrobePhoto(event));
+$('photo-review').addEventListener('submit',event=>{
+ event.preventDefault();
+ const draft=photoDraft,index=draft?.selected;
+ if(scope!=='personal'||!draft||(index!==-1&&!draft.candidates[index])||mutationBusy)return;
+ const item=readGarmentForm(event.target);if(!item)return;
+ void privateMutation('/api/me/wardrobe','POST',item,result=>{
+  if(!result.item?.id)throw new Error('저장 결과를 확인하지 못했어요. 다시 불러와 주세요.');
+  state.wardrobe.push(result.item);filter='전체';
+  if(photoDraft===draft){
+   if(index===-1){$('photo-dialog').close();resetPhotoImport();}
+   else{
+    draft.candidates.splice(index,1);draft.selected=null;showPhotoCandidates();
+    $('photo-status').textContent=draft.candidates.length?'다른 후보도 확인할 수 있어요.':'가져올 후보를 모두 확인했어요.';
+   }
+  }
+ },'내 계정의 옷장에 등록했습니다.');
 });
 $('profile-form').addEventListener('submit',event=>{
  event.preventDefault();if(!state||mutationBusy)return;const profile=Object.fromEntries(profileKeys.map(k=>[k,$('profile-'+k).value.trim()]));

@@ -12,6 +12,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="stylesheet" href="/dashboard.css" />
+        <link rel="stylesheet" href="/avatar-preview.css" />
         <link rel="stylesheet" href="/auth.css" />
         {/* 폰트는 외부 CSS로만 참조합니다. 글꼴 파일은 프로젝트에 포함하지 않습니다. */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />

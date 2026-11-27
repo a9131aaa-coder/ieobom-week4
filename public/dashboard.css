@@ -17,3 +17,12 @@
 @media(max-width:800px){.topbar{height:auto;min-height:74px;flex-wrap:wrap;gap:12px;padding-top:14px;padding-bottom:14px}.account-controls{flex:1;gap:8px}.account-label{font-size:12px;max-width:170px}.account-controls .button{font-size:12px;min-height:40px;padding:9px 12px}.garment-actions{gap:6px}}
 @media(max-width:420px){.account-controls{flex-basis:100%;justify-content:space-between}.account-label{max-width:185px}.garment-bottom{align-items:flex-start;gap:6px}.garment-actions{flex-shrink:0}}
 dialog #toast{position:static;transform:none;max-width:100%;margin-top:12px}
+.wardrobe-actions{display:flex;flex-wrap:wrap;gap:8px}
+#photo-form small{font-weight:400;color:var(--muted)}
+#photo-preview{max-width:100%;max-height:190px;display:block;margin:12px auto;object-fit:contain}
+#photo-candidates{display:grid;gap:8px}
+#photo-candidates:not(:empty){margin-top:16px}
+.photo-candidate{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;border:1px solid var(--line);background:#fff;padding:12px 14px;color:var(--ink);cursor:pointer}
+.photo-candidate span:first-child{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}
+.photo-candidate span:last-child{white-space:nowrap}
+.photo-candidate small{color:var(--muted)}

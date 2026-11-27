@@ -6,6 +6,7 @@ export default function Home() {
     <>
       <div dangerouslySetInnerHTML={{ __html: dashboardMarkup }} />
       <Script src="/dashboard.mjs" type="module" strategy="afterInteractive" />
+      <Script src="/avatar-preview.mjs" type="module" strategy="afterInteractive" />
     </>
   );
 }

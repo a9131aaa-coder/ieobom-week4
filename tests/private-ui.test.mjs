@@ -28,7 +28,7 @@ async function setup(handler, saved = legacy) {
   virtualConsole.on('jsdomError', error => { if (!error.message.includes('navigation')) throw error; });
   const dom = new JSDOM(`<!doctype html><body>${dashboardMarkup}</body>`, { url: 'https://example.test/', runScripts: 'outside-only', virtualConsole });
   const w = dom.window;
-  w.structuredClone = structuredClone; w.AbortSignal = AbortSignal;
+  w.structuredClone = structuredClone; w.AbortSignal = AbortSignal; w.AbortController = AbortController;
   w.HTMLElement.prototype.scrollIntoView = function () {};
   w.scrollTo = () => {};
   w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
@@ -40,6 +40,110 @@ async function setup(handler, saved = legacy) {
   return { dom, w, d: w.document, calls };
 }
 function submit(w, element) { element.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true })); }
+
+test('wardrobe photo candidates are editable and only the confirmed garment is saved', async () => {
+  const snapshot = personal(A);
+  const photoPath = '/api/me/wardrobe/analyze-photo';
+  const candidates = [
+    { name: '린넨 셔츠', category: '상의', color: '화이트', swatch: '#ffffff' },
+    { name: '넓은 바지', category: '하의', color: '네이비', swatch: '#25314a' },
+  ];
+  const app = await setup(async (url, init) => {
+    if (url === '/api/session') return Response.json({ user: A, authConfigured: true });
+    if (url === '/api/me/dashboard') return Response.json(snapshot);
+    if (url === photoPath && init.method !== 'POST') return Response.json({ available: true });
+    assert.equal(init.headers['X-Ieobom-User'], A.id);
+    if (url === photoPath) {
+      assert.equal(init.body.get('source'), 'shopping');
+      assert.equal(init.body.get('photo').type, 'image/jpeg');
+      assert.equal(init.headers['Content-Type'], undefined);
+      return Response.json({ candidates });
+    }
+    if (url === '/api/me/wardrobe') {
+      const item = JSON.parse(init.body);
+      assert.deepEqual(item, { ...candidates[0], name: '확인한 린넨 셔츠' });
+      return Response.json({ item: { ...item, id: '44444444-4444-4444-8444-444444444444' } });
+    }
+    throw new Error('Unexpected endpoint ' + url);
+  });
+  try {
+    const { d, w } = app;
+    w.createImageBitmap = async () => ({ width: 400, height: 500, close() {} });
+    w.HTMLCanvasElement.prototype.getContext = () => ({ fillRect() {}, drawImage() {} });
+    w.HTMLCanvasElement.prototype.toBlob = callback => callback(new w.Blob(['jpeg'], { type: 'image/jpeg' }));
+    d.getElementById('photo-open').click(); await tick();
+    d.getElementById('photo-source').value = 'shopping';
+    const file = new w.File(['png'], 'privacy-sensitive-name.png', { type: 'image/png' });
+    Object.defineProperty(d.getElementById('wardrobe-photo'), 'files', { value: [file] });
+    submit(w, d.getElementById('photo-form')); await tick();
+    assert.equal(d.querySelectorAll('[data-photo-candidate]').length, 2);
+    assert.equal(app.calls.some(call => call.url === '/api/me/wardrobe'), false);
+    d.querySelector('[data-photo-candidate="0"]').click();
+    assert.equal(d.getElementById('photo-item-name').value, '린넨 셔츠');
+    d.getElementById('photo-item-name').value = '확인한 린넨 셔츠';
+    submit(w, d.getElementById('photo-review')); await tick();
+    assert.equal(d.getElementById('wardrobe-count').textContent, '4');
+    assert.equal(d.querySelectorAll('[data-photo-candidate]').length, 1);
+    assert.equal(w.localStorage.getItem('ieobom-week5-v1'), legacy);
+  } finally { app.dom.window.close(); }
+});
+
+test('wardrobe photo import stays closed and clears fields when the account changes', async () => {
+  let user = A;
+  const pending = deferred();
+  const app = await setup(async url => {
+    if (url === '/api/session') return Response.json({ user, authConfigured: true });
+    if (url === '/api/me/dashboard') return Response.json(personal(user));
+    if (url === '/api/me/wardrobe/analyze-photo') return pending.promise;
+    throw new Error('Unexpected endpoint ' + url);
+  });
+  try {
+    const { d, w } = app;
+    d.getElementById('photo-open').click();
+    assert.equal(d.getElementById('photo-dialog').open, true);
+    user = B;
+    w.dispatchEvent(new w.Event('ieobom:auth-changed'));
+    await tick();
+    pending.resolve(Response.json({ available: true }));
+    await tick();
+    assert.equal(d.getElementById('photo-dialog').open, false);
+    assert.equal(d.getElementById('photo-analyze').disabled, true);
+    assert.equal(d.getElementById('photo-status').textContent, '');
+    assert.equal(d.getElementById('account-label').textContent, B.email);
+  } finally { app.dom.window.close(); }
+});
+
+test('manual entry from a photo works with AI disabled and never uploads the file', async () => {
+  const snapshot = personal(A);
+  const photoPath = '/api/me/wardrobe/analyze-photo';
+  const app = await setup(async (url, init) => {
+    if (url === '/api/session') return Response.json({ user: A, authConfigured: true });
+    if (url === '/api/me/dashboard') return Response.json(snapshot);
+    if (url === photoPath && init.method !== 'POST') return Response.json({ available: false });
+    if (url === '/api/me/wardrobe') {
+      const item = JSON.parse(init.body);
+      assert.deepEqual(Object.keys(item).sort(), ['category', 'color', 'name', 'swatch']);
+      return Response.json({ item: { ...item, id: '44444444-4444-4444-8444-444444444444' } });
+    }
+    throw new Error('Unexpected photo transfer');
+  });
+  try {
+    const { d, w } = app;
+    const selected = d.getElementById('wardrobe-photo');
+    d.getElementById('photo-open').click(); await tick();
+    assert.equal(d.getElementById('photo-analyze').disabled, true);
+    const file = new w.File(['png'], 'my-photo.png', { type: 'image/png' });
+    Object.defineProperty(selected, 'files', { value: [file] });
+    selected.dispatchEvent(new w.Event('change'));
+    d.getElementById('photo-manual').click();
+    d.getElementById('photo-item-name').value = '직접 확인한 셔츠';
+    d.getElementById('photo-item-color').value = '화이트';
+    submit(w, d.getElementById('photo-review')); await tick();
+    assert.equal(d.getElementById('wardrobe-count').textContent, '4');
+    assert.equal(d.getElementById('photo-dialog').open, false);
+    assert.equal(app.calls.some(call => call.url === photoPath && call.init.method === 'POST'), false);
+  } finally { app.dom.window.close(); }
+});
 
 test('private wardrobe writes wait for acknowledgement, edit canonically and never read or replace legacy browser data', async () => {
   const snapshot = personal(A);
