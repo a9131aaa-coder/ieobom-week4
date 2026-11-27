@@ -15,6 +15,7 @@ async function setup(saved, dashboard=mock){
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  if(saved)w.localStorage.setItem('ieobom-week5-v1',saved);
  w.fetch=async(url,init)=>{
+  if(url==='/api/session')return Response.json({user:null,authConfigured:true});
   if(url==='/api/dashboard')return Response.json(dashboard,{headers:{'X-Data-Source':'db'}});
   const body=JSON.parse(init.body);const input=normalizeInput(body,mock);
   return Response.json(await suggestOutfits(input,{env:{},forceFallback:body.forceFallback}));
@@ -52,7 +53,7 @@ test('five menus, wardrobe create/delete, profile save, analysis save and rating
 test('initial API failure can be retried without making AI calls',async()=>{
  const {dom,w,d}=await setup();
  try{let calls=0;w.fetch=async()=>{calls++;return new Response('',{status:500});};d.querySelector('[data-action="reload"]').click();await tick();assert.equal(d.getElementById('load-error').hidden,false);
- w.fetch=async()=>Response.json(mock);d.querySelector('[data-action="reload"]').click();await tick();assert.equal(d.getElementById('load-error').hidden,true);assert.equal(d.querySelector('[data-page="home"]').hidden,false);assert.equal(calls,1);
+ w.fetch=async url=>Response.json(url==='/api/session'?{user:null,authConfigured:true}:mock);d.querySelector('[data-action="reload"]').click();await tick();assert.equal(d.getElementById('load-error').hidden,true);assert.equal(d.querySelector('[data-page="home"]').hidden,false);assert.equal(calls,1);
  }finally{dom.window.close();}
 });
 

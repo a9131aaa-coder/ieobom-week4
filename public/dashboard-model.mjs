@@ -1,6 +1,6 @@
 /** API/브라우저/테스트가 함께 사용하는 데이터 검증. 숫자는 JSON에만 둡니다. */
 export function validateDashboard(data) {
-  if (!data || data.mode !== 'mock' || !data.summary || !Array.isArray(data.recent)) {
+  if (!data || !['mock', 'personal'].includes(data.mode) || !data.summary || !Array.isArray(data.recent)) {
     throw new Error('Invalid dashboard structure');
   }
   const { remaining, limit, wardrobeCount, profileCompletion } = data.summary;
@@ -17,11 +17,11 @@ export function validateDashboard(data) {
     throw new Error('Record IDs must be unique');
   }
   for (const item of data.recent) {
-    for (const key of ['id', 'title', 'description', 'occasion', 'date', 'status', 'thumbnail']) {
+    for (const key of ['id', 'title', 'description', 'occasion', 'date', 'status']) {
       if (typeof item[key] !== 'string' || !item[key]) throw new Error(`Invalid record ${key}`);
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date)) throw new Error('Invalid record date');
-    if (!/^\/images\/look-\d{2}\.webp$/.test(item.thumbnail)) throw new Error('Invalid local thumbnail');
+    if ((data.mode === 'mock' || item.thumbnail) && !/^\/images\/look-\d{2}\.webp$/.test(item.thumbnail)) throw new Error('Invalid local thumbnail');
     if (!['착용 완료', '피드백 대기', '저장됨'].includes(item.status)) throw new Error('Invalid record status');
   }
   if (typeof data.periodLabel !== 'string') throw new Error('Invalid period');

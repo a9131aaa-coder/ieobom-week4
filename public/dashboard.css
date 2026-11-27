@@ -11,3 +11,9 @@
 @media(max-width:480px){.data-status{padding:14px;gap:10px}.data-status>div{flex-basis:100%}.history-pages{gap:10px}}
 
 .access-table{overflow-x:auto;max-width:100%}.access-table table{border-collapse:collapse;width:100%;font-size:12px}.access-table td,.access-table th{padding:8px;text-align:left;border-bottom:1px solid #ddd;white-space:nowrap}
+
+/* Week 9 account controls and inline garment editing. */
+.account-controls{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}.account-label{font-size:13px;color:#555d4e;overflow-wrap:anywhere;max-width:260px}.account-controls .button{flex-shrink:0;font-size:13px;min-height:40px}.garment-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.garment-actions .delete-button{min-height:36px;min-width:34px}.topbar{gap:16px}.data-status>div{min-width:0}.data-status p,.source-detail p{overflow-wrap:anywhere}button:disabled{cursor:wait;opacity:.6}
+@media(max-width:800px){.topbar{height:auto;min-height:74px;flex-wrap:wrap;gap:12px;padding-top:14px;padding-bottom:14px}.account-controls{flex:1;gap:8px}.account-label{font-size:12px;max-width:170px}.account-controls .button{font-size:12px;min-height:40px;padding:9px 12px}.garment-actions{gap:6px}}
+@media(max-width:420px){.account-controls{flex-basis:100%;justify-content:space-between}.account-label{max-width:185px}.garment-bottom{align-items:flex-start;gap:6px}.garment-actions{flex-shrink:0}}
+dialog #toast{position:static;transform:none;max-width:100%;margin-top:12px}

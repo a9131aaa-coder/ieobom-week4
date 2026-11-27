@@ -193,7 +193,7 @@ export default function ChatClient() {
               <p>기억이 가물가물한 조합도, 다시 입고 싶은 스타일도.<br />저장된 코디 기록을 찾아 근거와 함께 답해요.</p>
             </div>
 
-            <div className="chat-scope"><span className="chat-scope-label">검색 범위</span><p><strong>공통 예시 코디 기록</strong>을 검색합니다. 이 브라우저에서 개인적으로 추가·수정한 기록은 포함되지 않아요.</p></div>
+            <div className="chat-scope"><span className="chat-scope-label">검색 범위</span><p><strong>공통 예시 코디 기록</strong>을 검색합니다. 내 계정이나 이 브라우저에서 개인적으로 추가·수정한 기록은 포함되지 않아요.</p></div>
 
             <form className="chat-form" onSubmit={submit} aria-busy={loading}>
               <label htmlFor="chat-question">어떤 코디가 궁금한가요?</label>

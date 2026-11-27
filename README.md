@@ -1,34 +1,53 @@
-# 입어봄 · 8주차 코디 기록 RAG
+# 입어봄 · 9주차 개발 인계본
 
-기존 6주차 기능에 `/chat` 코디 기록 챗봇을 추가했습니다. Supabase의 공통 예시 코디 기록을 벡터 검색하고, 답변에 사용한 기록만 출처 카드로 표시합니다. 로그인·개인 기록 동기화는 다음 단계입니다.
+**운영 사이트는 8주차 버전입니다. 이 폴더는 아직 배포하지 않은 9주차 개발 코드입니다.**
 
-**8주차 설치·검증 순서:** [docs/WEEK8_SETUP.md](docs/WEEK8_SETUP.md). 코드를 배포하는 것 외에 SQL 실행과 실제 임베딩 생성이 필요합니다. 키가 없거나 검색 준비가 끝나지 않았으면 챗봇은 오류 안내를 표시하며 예시 답변을 실제 답변처럼 보여 주지 않습니다.
+운영 DB에는 개인 저장 표 3개를 추가했고 권한 검사 9개가 통과했습니다. 배포 전 확인할 로그인 설정과 서비스 검증 항목은 [9주차 설정 안내](docs/WEEK9_SETUP.md)에 있습니다.
 
-## 기존 기능
+## 현재 범위
 
-프로필 1개, 의류 12벌, 코디 기록 20개를 Supabase에서 읽는 Next.js 앱입니다. 모든 초기 데이터는 가상입니다. 5주차의 AI 분석과 브라우저 저장 버튼 기능을 유지합니다.
+- 8주차: 공통 예시 옷장과 코디 기록, Gemini 코디 추천, 코디 기록 RAG와 출처 카드. 운영 중.
+- 9주차 개발본: 이메일 회원가입·로그인·비밀번호 재설정, 개인 옷장/프로필/코디 기록 저장, 계정별 RLS, 계정 전환 시 화면 정리.
+- 아직 미구현: 사진 등록과 AI 의류 추출, 체형 사진 분석, 수동 아바타, 개인 기록 RAG, 기존 브라우저 자료 가져오기.
 
-사용자 안내: `public/GUIDE.html` 또는 `docs/GUIDE.md`. 표 설계: `docs/TABLE_DESIGN.md`.
+기존 공통 자료는 `ieobom_profiles`, `ieobom_wardrobe`, `ieobom_outfits`에 있습니다. 개인 자료는 별도의 `ieobom_user_*` 표에 저장하도록 구현했습니다. `/chat`은 공통 예시 기록만 검색합니다.
 
-## 실행
+## 실행과 검증
 
-Node.js 22에서 `npm ci`, `npm run dev`. 검사: `npm test`, `npm run build`.
-`.env.example`을 참고하여 실제 값은 `.env.local` 또는 Vercel 환경변수에만 넣습니다.
+프로젝트 지정 런타임은 Node.js 22입니다.
 
-## API
+```sh
+npm ci
+npm run dev
+```
 
-- POST `/api/chat`: 질문 임베딩 → 공통 코디 벡터 검색 → 실제 인용 근거로 답변. 검색 결과 없음은 정상 거부, 설정·연결 실패는 `fallback: true`.
+실제 값은 `.env.example`을 참고해 `.env.local`에 넣습니다. 키가 없는 상태에서도 자동 테스트와 빌드를 실행할 수 있지만, 실제 회원가입과 DB 저장은 확인할 수 없습니다.
 
-- GET `/api/dashboard`: DB 성공 시 `x-data-source: db`, 설정 누락·DB 오류 시 동일 JSON 형태의 파일 데이터와 `mock`. DB 전체 시간 제한 5초.
-- POST `/api/suggest`: 기존 Gemini 분석. 공통 옷장도 DB에서 읽습니다. AI 실패 시 검증된 대체 코디와 `fallback: true`.
-- POST `/api/database-check`: 같은 사이트의 확인 버튼용. 공개 키로 SELECT/INSERT/UPDATE/DELETE 권한을 실제 검사합니다. 무작위 미존재 ID와 의도적으로 무효인 INSERT만 사용합니다. 실제 행을 생성·수정·삭제하지 않습니다.
+```sh
+npm test
+npm run typecheck
+npm run build
+```
 
-Supabase REST 요청은 서버 `lib/dashboard-data.mjs`에 모았습니다. `SUPABASE_SECRET_KEY`는 서버 전용이며 공개 키는 별도 권한 검사에만 사용합니다. 새로운 SDK 의존성을 추가하지 않았습니다.
+9주차 설정·실서비스 검증: [docs/WEEK9_SETUP.md](docs/WEEK9_SETUP.md).
+8주차 설정 참고: [docs/WEEK8_SETUP.md](docs/WEEK8_SETUP.md). **기존 운영 DB 설정과 임베딩을 처음부터 다시 만들 필요는 없습니다.**
 
-`supabase/001_init.sql`은 세 표·제약·RLS·읽기 정책·33행 초기 데이터를 생성합니다. 재실행 시 기존 값은 유지합니다. `002`는 공개 역할 읽기, `003`은 수정 거부, `004`는 RLS/권한 조회입니다.
+## 주요 API
 
-## 범위
+| API | 역할 |
+| --- | --- |
+| GET `/api/session` | 검증된 로그인 사용자 정보 |
+| GET `/api/me/dashboard` | 현재 계정의 개인 자료 |
+| PUT `/api/me/profile` | 내 취향 프로필 저장 |
+| POST `/api/me/wardrobe` | 내 옷 등록 |
+| PATCH / DELETE `/api/me/wardrobe/[id]` | 내 옷 수정 / 삭제 |
+| POST `/api/me/outfits` | 내 코디 저장 |
+| PATCH / DELETE `/api/me/outfits/[id]` | 상태·평점 수정 / 삭제 |
+| POST `/api/suggest` | 공통·브라우저·개인 옷장 코디 추천 |
+| POST `/api/chat` | 공통 예시 코디 기록 RAG |
+| POST `/api/auth/signout` | 현재 세션 로그아웃 |
+| POST `/api/auth/password` | 비밀번호 변경 |
 
-공통 자료는 DB, 개인 수정은 localStorage입니다. 로그인이나 사용자의 AI 결과를 DB에 쓰는 기능은 없습니다. 기존 브라우저 데이터는 기준 데이터와 차이만 합쳐서 최신 DB 값이 가려지지 않도록 했습니다. 홈 5건, 기록 페이지 10건씩 표시합니다.
+개인 요청은 Supabase 공개 키와 검증된 사용자의 세션으로 처리하며, DB가 행 소유권을 검사합니다. 서버 비밀 키는 기존 공통 자료/RAG용이며 개인 자료 API에 사용하지 않습니다.
 
-자동 테스트는 대체 응답·응답 형식·키 비노출·권한 검사 요청·기존 버튼·브라우저 데이터 보존을 확인합니다. 실제 DB·Vercel·휴대폰은 배포 후 확인해야 합니다. `docs/TEST_REPORT.md` 참고.
+기존 `docs/TEST_REPORT.md`, `PRD.md`, `docs/GUIDE.md` 등은 과거 단계 문서입니다. 현재 검증 내역은 [9주차 검증 기록](docs/HANDOFF_VALIDATION.md)에 있습니다.
