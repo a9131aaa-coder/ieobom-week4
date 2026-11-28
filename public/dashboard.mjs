@@ -129,7 +129,7 @@ async function checkIdentity(){
 }
 function updateControls(){
  document.querySelectorAll('[data-analyze-button],[data-action="quick-analyze"],[data-action="failure-test"]').forEach(el=>el.disabled=busy||mutationBusy||!state);
- document.querySelectorAll('[data-remove-item],[data-edit-item],[data-save-outfit],[data-rating],[data-action="mark-worn"],[data-action="delete-record"],[data-action="add-item"],#item-form button[type="submit"],#profile-form button[type="submit"]').forEach(el=>el.disabled=mutationBusy||!state);
+ document.querySelectorAll('[data-remove-item],[data-edit-item],[data-save-outfit],[data-rating],[data-action="mark-worn"],[data-action="delete-record"],[data-action="add-item"],[data-action="publish-instagram"],#item-form button[type="submit"],#profile-form button[type="submit"]').forEach(el=>el.disabled=mutationBusy||!state);
  $('account-signout').disabled=false;
 }
 async function privateMutation(path,method,body,apply,message){
@@ -164,7 +164,13 @@ function renderWardrobe(){
   $('wardrobe-grid').innerHTML=items.length?items.map(w=>`<article class="garment"><div class="garment-art">${garmentSvg(w)}</div><small>${escape(w.category)}</small><h3>${escape(w.name)}</h3><div class="garment-bottom"><span>${escape(w.color)}</span><span class="garment-actions"><button class="delete-button" data-edit-item="${escape(w.id)}" aria-label="${escape(w.name)} 수정">수정</button><button class="delete-button" data-remove-item="${escape(w.id)}" aria-label="${escape(w.name)} 삭제">삭제</button></span></div></article>`).join(''):'<p class="empty">이 분류에 등록한 옷이 없어요.</p>';
 }
 const recordType=r=>r.kind==='ai'?'AI 분석':r.kind==='fallback'?'예시 결과':'예시 기록';
-function rows(records){return records.length?records.map((r,i)=>`<button class="record-row" data-record="${escape(r.id)}"><span class="record-image">${r.kind==='sample'&&/^\/images\/look-0[1-5]\.webp$/.test(r.thumbnail)?`<img src="${r.thumbnail}" alt="" width="48" height="58" class="record-image">`:String(i+1).padStart(2,'0')}</span><span class="record-copy"><strong>${escape(r.title)}</strong><p>${escape(r.description)}</p></span><span class="record-meta"><span class="occasion">${escape(r.occasion)}</span><span>${escape(r.date?.slice(5).replace('-','.'))}</span><span class="badge ${r.kind==='ai'?'ai':''}">${escape(r.status)}</span></span></button>`).join(''):'<p class="empty">코디 분석 결과에서 마음에 드는 조합을 저장해 보세요.</p>';}
+function instagramBadge(record){
+ if(scope!=='personal')return '';
+ if(record.instagramPublishStatus==='published')return '<span class="badge ai">Instagram 게시 완료</span>';
+ if(record.instagramPublishStatus==='publishing')return '<span class="badge">Instagram 게시 확인 중</span>';
+ return '';
+}
+function rows(records){return records.length?records.map((r,i)=>`<button class="record-row" data-record="${escape(r.id)}"><span class="record-image">${r.kind==='sample'&&/^\/images\/look-0[1-5]\.webp$/.test(r.thumbnail)?`<img src="${r.thumbnail}" alt="" width="48" height="58" class="record-image">`:String(i+1).padStart(2,'0')}</span><span class="record-copy"><strong>${escape(r.title)}</strong><p>${escape(r.description)}</p></span><span class="record-meta"><span class="occasion">${escape(r.occasion)}</span><span>${escape(r.date?.slice(5).replace('-','.'))}</span><span class="badge ${r.kind==='ai'?'ai':''}">${escape(r.status)}</span>${instagramBadge(r)}</span></button>`).join(''):'<p class="empty">코디 분석 결과에서 마음에 드는 조합을 저장해 보세요.</p>';}
 function render(){
   $('wardrobe-count').textContent=state.wardrobe.length;$('saved-count').textContent=state.records.length;
   $('profile-completion').textContent=profileKeys.filter(k=>state.profile[k].trim()).length*20;
@@ -228,13 +234,64 @@ function openItem(id=null){
 }
 function updateRecord(patch,message){
  if(!state||mutationBusy)return;const id=activeRecord;const record=state.records.find(r=>r.id===id);if(!record)return;
- if(scope==='personal')return privateMutation('/api/me/outfits/'+encodeURIComponent(id),'PATCH',patch,result=>{if(!result.record?.id)throw new Error('저장 결과를 확인하지 못했어요. 다시 불러와 주세요.');state.records=state.records.map(r=>r.id===id?result.record:r);},message);
+ if(scope==='personal')return privateMutation('/api/me/outfits/'+encodeURIComponent(id),'PATCH',patch,result=>{if(!result.record?.id)throw new Error('저장 결과를 확인하지 못했어요. 다시 불러와 주세요.');state.records=state.records.map(r=>r.id===id?{...r,...result.record}:r);},message);
  Object.assign(record,patch);persist();render();showRecord(id);toast(message);
 }
+function canPublishInstagram(record){
+ return scope==='personal'&&data?.instagramPublishingAvailable===true&&record&&
+  record.instagramPublishStatus!=='publishing'&&record.instagramPublishStatus!=='published';
+}
+function instagramControls(record){
+ const badge=instagramBadge(record);
+ if(badge)return `<p class="hint">${badge}${record.instagramPublishStatus==='publishing'?' · 게시 결과가 불확실하면 Instagram 피드를 확인해 주세요.':''}</p>`;
+ if(!canPublishInstagram(record))return '';
+ let imageLink='';
+ try{
+  const photo=new URL(data.instagramImageUrl);
+  if(photo.protocol==='https:'&&!photo.username&&!photo.password)imageLink=`<a class="button secondary small" href="${escape(photo.href)}" target="_blank" rel="noopener noreferrer">게시 이미지 보기</a>`;
+ }catch{}
+ return `<div class="detail-actions"><button type="button" class="button" data-action="publish-instagram">인스타그램에 올리기</button>${imageLink}</div>`;
+}
+async function publishInstagram(button){
+ const id=activeRecord,record=state?.records.find(row=>row.id===id);
+ if(!canPublishInstagram(record)||!currentUser||mutationBusy)return;
+ const caption=[record.title,record.description,'#입어봄'].map(part=>part.trim()).join('\n\n');
+ if(!window.confirm(`홍보 이미지와 아래 내용이 연결된 Instagram 계정의 공개 피드에 올라갑니다. 게시할까요?\n\n${caption}`))return;
+ const requestEpoch=epoch,userId=currentUser.id;
+ mutationBusy=true;button.textContent='게시 중…';button.setAttribute('aria-busy','true');updateControls();
+ const refreshRecord=()=>{render();if(activeRecord===id&&$('record-dialog').open)showRecord(id);};
+ try{
+  const {body:result}=await requestJSON('/api/instagram/publish',{
+   method:'POST',headers:{'Content-Type':'application/json','X-Ieobom-User':userId},body:JSON.stringify({id}),
+  },65000,requestEpoch);
+  if(!isCurrent(requestEpoch,userId))return;
+  if(result?.instagramPublishStatus!=='published'||!result.instagramPostId||!result.instagramPostedAt)throw new Error('게시 결과를 확인하지 못했어요.');
+  Object.assign(record,{instagramPublishStatus:'published',instagramPostId:result.instagramPostId,instagramPostedAt:result.instagramPostedAt});
+  refreshRecord();toast('Instagram에 게시했어요.');
+ }catch(error){
+  if(!isCurrent(requestEpoch,userId)||error.name==='StaleRequest')return;
+  if(error.status===401||error.code==='account_changed'){
+   await load();toast('로그인 상태를 다시 확인했어요.');return;
+  }
+  if(error.code==='already_published'){
+   await load();
+   if(currentUser?.id===userId&&state?.records.some(row=>row.id===id)){showRecord(id);toast('이미 Instagram에 게시된 코디예요.');}
+   return;
+  }
+  if(!error.status||error.code==='publication_pending'){
+   record.instagramPublishStatus='publishing';refreshRecord();
+   toast('게시 결과를 확인하지 못했어요. Instagram 피드를 확인한 뒤 새로고침해 주세요.');return;
+  }
+  toast(error.message||'게시 요청을 완료하지 못했어요.');
+ }finally{
+  if(requestEpoch===epoch){mutationBusy=false;button.textContent='인스타그램에 올리기';button.removeAttribute('aria-busy');updateControls();}
+ }
+}
 function showRecord(id){
- activeRecord=id;const r=state.records.find(x=>x.id===id);if(!r)return;
- $('record-detail').innerHTML=`<span class="badge">${recordType(r)}</span><h3 class="detail-title">${escape(r.title)}</h3><p class="detail-description">${escape(r.description)}</p>${r.reason?`<p class="detail-description">${escape(r.reason)}</p><p class="tip">${escape(r.tip)}</p>`:''}<p class="hint">${escape(r.date)} · ${escape(r.occasion)} · ${escape(r.status)}</p><label>입어본 만족도</label><div class="rating" aria-label="만족도 선택">${[1,2,3,4,5].map(v=>`<button data-rating="${v}" class="${r.rating>=v?'selected':''}" aria-label="${v}점" aria-pressed="${r.rating===v}">★</button>`).join('')}</div><div class="detail-actions"><button class="button" data-action="mark-worn">착용 완료로 표시</button><button class="button secondary" data-action="delete-record">기록 삭제</button></div>`;
+ const r=state?.records.find(x=>x.id===id);if(!r)return;activeRecord=id;
+ $('record-detail').innerHTML=`<span class="badge">${recordType(r)}</span><h3 class="detail-title">${escape(r.title)}</h3><p class="detail-description">${escape(r.description)}</p>${r.reason?`<p class="detail-description">${escape(r.reason)}</p><p class="tip">${escape(r.tip)}</p>`:''}<p class="hint">${escape(r.date)} · ${escape(r.occasion)} · ${escape(r.status)}</p><label>입어본 만족도</label><div class="rating" aria-label="만족도 선택">${[1,2,3,4,5].map(v=>`<button data-rating="${v}" class="${r.rating>=v?'selected':''}" aria-label="${v}점" aria-pressed="${r.rating===v}">★</button>`).join('')}</div><div class="detail-actions"><button class="button" data-action="mark-worn">착용 완료로 표시</button><button class="button secondary" data-action="delete-record">기록 삭제</button></div>${instagramControls(r)}`;
  if(!$('record-dialog').open)$('record-dialog').showModal();
+ updateControls();
 }
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function csvValue(v){let s=String(v??'');if(/^[=+@-]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
@@ -267,6 +324,7 @@ document.addEventListener('click',event=>{
  case 'add-item':openItem();break;
  case 'close-dialog':el.closest('dialog').close();break;
  case 'mark-worn':void updateRecord({status:'착용 완료'},'착용 완료로 표시했습니다.');break;
+ case 'publish-instagram':void publishInstagram(el);break;
  case 'delete-record':{if(!state||mutationBusy)break;const id=activeRecord;if(scope==='personal')void privateMutation('/api/me/outfits/'+encodeURIComponent(id),'DELETE',undefined,()=>{state.records=state.records.filter(x=>x.id!==id);activeRecord=null;$('record-dialog').close();},'기록을 삭제했습니다.');else{state.records=state.records.filter(x=>x.id!==id);persist();render();$('record-dialog').close();toast('기록을 삭제했습니다.');}break;}
  case 'download-response':if(state.analysis)download('ieobom-ai-response.json',JSON.stringify(state.analysis.raw,null,2),'application/json');break;
  case 'download-cost':{const r=state.analysis;if(!r?.usage){toast('토큰 사용량이 있는 실제 AI 응답을 먼저 받으세요.');break;}const u=r.usage;const csv=[['시각','모델','fallback','입력 토큰','출력 토큰','추론 토큰','입력 단가 USD/100만','출력 단가 USD/100만','환율','유료 단가 환산 KRW','정의서 게이트③ 비교'],[r.generatedAt,r.model,r.fallback,u.inputTokens,u.outputTokens,u.thinkingTokens,u.inputUsdPerMillion,u.outputUsdPerMillion,u.exchangeRate,u.estimatedKrw,'정의서 목표와 직접 비교해 작성']].map(row=>row.map(csvValue).join(',')).join('\r\n');download('ieobom-ai-cost.csv','\uFEFF'+csv,'text/csv;charset=utf-8');break;}

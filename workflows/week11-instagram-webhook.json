@@ -1,0 +1,204 @@
+{
+  "name": "입어봄 11주차 - Instagram Webhook 게시",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ieobom-instagram-publish",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000011",
+      "name": "Instagram Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f37292b1-6a4c-4b71-8ce0-000000001100",
+      "notes": "Header Auth의 Name은 x-ieoga-secret입니다. Value에는 입어봄 서버와 같은 비밀값을 직접 설정하세요."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000120",
+              "name": "graph_base_url",
+              "value": "https://graph.facebook.com/v26.0",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000121",
+              "name": "ig_user_id",
+              "value": "REPLACE_WITH_IG_USER_ID",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000122",
+              "name": "image_url",
+              "value": "={{ $json.body.image_url }}",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000123",
+              "name": "caption",
+              "value": "={{ $json.body.caption }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000012",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        0
+      ],
+      "notes": "Manual 워크플로의 계정 확인과 같은 프로페셔널 계정 ID와 Graph API 주소를 입력하세요. 게시물 이미지와 문구는 입어봄 서버에서 받습니다."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.graph_base_url + '/' + $json.ig_user_id + '/media' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.image_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.caption }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000013",
+      "name": "Create Instagram Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        0
+      ],
+      "notes": "Header Auth 자격 증명을 연결하세요. Name은 Authorization, Value는 Bearer와 Meta 토큰을 한 칸 띄워 입력합니다. 토큰은 이 워크플로 파일에 입력하지 않습니다."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json.graph_base_url + '/' + $('Edit Fields').first().json.ig_user_id + '/media_publish' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000014",
+      "name": "Publish Instagram Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        0
+      ],
+      "retryOnFail": false,
+      "notes": "Header Auth 자격 증명을 연결하세요. Name은 Authorization, Value는 Bearer와 Meta 토큰을 한 칸 띄워 입력합니다. 토큰은 이 워크플로 파일에 입력하지 않습니다. 게시 결과가 불확실하면 Instagram에서 실제 게시 여부를 확인하세요."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { id: String($json.id ?? '') } }}",
+        "options": {}
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000015",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1040,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Instagram Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create Instagram Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Instagram Media": {
+      "main": [
+        [
+          {
+            "node": "Publish Instagram Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Instagram Media": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "tags": []
+}

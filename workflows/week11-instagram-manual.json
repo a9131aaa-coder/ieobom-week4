@@ -1,0 +1,210 @@
+{
+  "name": "입어봄 11주차 - Instagram 수동 게시",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://graph.facebook.com/v26.0/REPLACE_WITH_IG_USER_ID",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,username"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000002",
+      "name": "Check Instagram Account",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "notes": "URL의 REPLACE_WITH_IG_USER_ID를 Instagram 프로페셔널 계정의 숫자 ID로 바꾸세요. Instagram Login을 쓰면 해당 토큰과 호스트에 맞춰 이 URL을 바꾸세요. Header Auth 자격 증명을 연결하세요. Name은 Authorization, Value는 Bearer와 Meta 토큰을 한 칸 띄워 입력합니다. 토큰은 이 워크플로 파일에 입력하지 않습니다."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000030",
+              "name": "graph_base_url",
+              "value": "={{ $('Check Instagram Account').params.url.split('/').slice(0, -1).join('/') }}",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000031",
+              "name": "ig_user_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000032",
+              "name": "image_url",
+              "value": "https://whrxlldbsblrmhzzjrhk.supabase.co/storage/v1/object/public/promo/ieobom-course-promo-shirt.jpg",
+              "type": "string"
+            },
+            {
+              "id": "f37292b1-6a4c-4b71-8ce0-000000000033",
+              "name": "caption",
+              "value": "입어봄 코디 자동화 테스트 #입어봄 #오늘의코디",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000003",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        520,
+        0
+      ],
+      "notes": "사용을 승인한 공개 JPEG 주소와 문구를 입력하세요. 이 워크플로를 실행하면 연결된 Instagram 계정에 실제 게시됩니다."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.graph_base_url + '/' + $json.ig_user_id + '/media' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.image_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.caption }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000004",
+      "name": "Create Instagram Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        0
+      ],
+      "notes": "Header Auth 자격 증명을 연결하세요. Name은 Authorization, Value는 Bearer와 Meta 토큰을 한 칸 띄워 입력합니다. 토큰은 이 워크플로 파일에 입력하지 않습니다."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Edit Fields').first().json.graph_base_url + '/' + $('Edit Fields').first().json.ig_user_id + '/media_publish' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "f37292b1-6a4c-4b71-8ce0-000000000005",
+      "name": "Publish Instagram Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        0
+      ],
+      "retryOnFail": false,
+      "notes": "Header Auth 자격 증명을 연결하세요. Name은 Authorization, Value는 Bearer와 Meta 토큰을 한 칸 띄워 입력합니다. 토큰은 이 워크플로 파일에 입력하지 않습니다. 게시 결과가 불확실하면 Instagram에서 실제 게시 여부를 확인하세요."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Instagram Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Instagram Account": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create Instagram Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Instagram Media": {
+      "main": [
+        [
+          {
+            "node": "Publish Instagram Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "tags": []
+}

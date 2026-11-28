@@ -1,0 +1,76 @@
+{
+  "id": "IbWeek10PracticeA",
+  "name": "10주차 실습 A · Edit Fields",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9412963f-7034-44f1-b224-a41308fde590",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b68fc5c8-1234-4da0-94ba-203208c181cf",
+              "name": "가게이름",
+              "value": "동네빵집",
+              "type": "string"
+            },
+            {
+              "id": "6afa2a12-a07b-4f8a-b2c9-8b8f54cf888a",
+              "name": "메뉴",
+              "value": "크림빵",
+              "type": "string"
+            },
+            {
+              "id": "49216776-6f61-4c95-8ae9-a628932ecded",
+              "name": "가격",
+              "value": 3500,
+              "type": "number"
+            },
+            {
+              "id": "92304337-b1fe-42d9-a285-f16511db0fd0",
+              "name": "홍보문구",
+              "value": "갓구운빵",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "b10bc140-60d2-47b8-8ab3-bb011db9e3eb",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Seoul"
+  }
+}

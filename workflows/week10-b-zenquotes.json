@@ -1,0 +1,98 @@
+{
+  "id": "IbWeek10PracticeB",
+  "name": "10주차 실습 B · ZenQuotes",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c5a3a958-a259-4f69-b3c1-86081f4ce620",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://zenquotes.io/api/random",
+        "options": {
+          "timeout": 12000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "97f49894-0443-4b19-84a7-913dc71ed7fc",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca285139-1b99-4150-9fb1-6bba777af01d",
+              "name": "quote",
+              "value": "={{ $json.q }}",
+              "type": "string"
+            },
+            {
+              "id": "7dd35d71-8f32-4bf2-a383-034cd1a596bb",
+              "name": "author",
+              "value": "={{ $json.a }}",
+              "type": "string"
+            },
+            {
+              "id": "6442b6b6-cf80-425a-83b5-787283b89353",
+              "name": "받은시각",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ],
+      "id": "409fc4f5-cbf5-49f6-a2e2-355cdec570ed",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Seoul"
+  }
+}
