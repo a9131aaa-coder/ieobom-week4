@@ -1,0 +1,65 @@
+.intro {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #302824;
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+
+.intro::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.fading {
+  opacity: 0;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 56% 50%;
+}
+
+.skip {
+  position: absolute;
+  inset-block-start: calc(1rem + env(safe-area-inset-top));
+  inset-inline-end: calc(1rem + env(safe-area-inset-right));
+  min-height: 44px;
+  padding: 0.625rem 1rem;
+  border: 1px solid #ffffff8c;
+  border-radius: 999px;
+  background: #241c17c9;
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.skip:hover,
+.skip:focus-visible {
+  background: #241c17;
+}
+
+.skip:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    transition: none;
+  }
+}

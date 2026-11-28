@@ -9,7 +9,7 @@ const AUTH_MARKER='ieobom-auth-change';
 const profileKeys=['style','colors','avoid','comfort','goal'];
 function toast(message){
  const notice=$('toast');
- const host=document.querySelector('dialog[open]')||document.body;
+ const host=document.querySelector('dialog[open]:not([data-home-intro])')||document.body;
  if(notice.parentElement!==host)host.append(notice);
  notice.textContent=message;notice.hidden=false;
  clearTimeout(toastTimer);toastTimer=setTimeout(()=>notice.hidden=true,4200);
